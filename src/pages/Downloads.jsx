@@ -62,7 +62,7 @@ export default function Downloads() {
       {/* Page Header */}
       <div className="bg-emerald-900 text-white py-12 px-4 text-center">
         <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">Downloads & Resources</h1>
-        <p className="text-blue-100 mt-2 max-w-xl mx-auto">
+        <p className="text-emerald-100 mt-2 max-w-xl mx-auto">
           Access the latest downloadable files, handbooks, official templates, and guidelines managed by the OSAS.
         </p>
       </div>
@@ -72,27 +72,27 @@ export default function Downloads() {
         {/* Filter Controls */}
         <div className="bg-white p-6 rounded-lg border border-slate-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
           
-          {/* Search bar */}
+          {/* Search bar (Updated focus ring to emerald) */}
           <div className="relative flex-1">
             <input 
               type="text" 
               placeholder="Search documents by name or description..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+              className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-sm"
             />
             <span className="absolute left-3 top-2.5 text-slate-400">🔍</span>
           </div>
 
-          {/* Category Tabs */}
+          {/* Category Tabs (Updated to Emerald) */}
           <div className="flex flex-wrap gap-2">
             {categories.map((category) => (
               <button
                 key={category}
                 onClick={() => setSelectedCategory(category)}
-                className={`px-4 py-1.5 text-xs font-semibold rounded-md transition ${
+                className={`px-4 py-1.5 text-xs font-semibold rounded-md transition cursor-pointer ${
                   selectedCategory === category 
-                    ? 'bg-blue-900 text-white shadow-sm' 
+                    ? 'bg-emerald-800 text-white shadow-sm' 
                     : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                 }`}
               >
@@ -106,10 +106,11 @@ export default function Downloads() {
         <div className="space-y-4">
           {filteredDocs.length > 0 ? (
             filteredDocs.map((doc) => (
-              <div key={doc.id} className="bg-white p-6 rounded-lg border border-slate-200 shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 hover:border-slate-300 transition">
+              <div key={doc.id} className="bg-white p-6 rounded-lg border border-slate-200 shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 hover:border-emerald-200 transition">
                 <div className="space-y-1">
                   <div className="flex items-center space-x-2">
-                    <span className="text-xs font-bold text-blue-900 bg-blue-50 px-2 py-0.5 rounded">
+                    {/* Category Badge updated to Emerald */}
+                    <span className="text-xs font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded">
                       {doc.category}
                     </span>
                     <span className="text-xs text-slate-400 font-medium">
@@ -120,10 +121,10 @@ export default function Downloads() {
                   <p className="text-xs text-slate-500 leading-relaxed max-w-2xl">{doc.description}</p>
                 </div>
                 
-                {/* Simulated Download Trigger */}
+                {/* Simulated Download Button updated to Emerald */}
                 <button 
                   onClick={() => alert(`Simulated download for: ${doc.name}`)}
-                  className="w-full sm:w-auto bg-blue-900 hover:bg-blue-800 text-white font-semibold text-xs py-2.5 px-5 rounded-md transition whitespace-nowrap shadow-sm text-center"
+                  className="w-full sm:w-auto bg-emerald-800 hover:bg-emerald-950 text-white font-semibold text-xs py-2.5 px-5 rounded-md transition whitespace-nowrap shadow-sm text-center cursor-pointer"
                 >
                   Download File
                 </button>
