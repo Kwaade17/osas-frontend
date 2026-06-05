@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { API_BASE_URL } from '../config'; // Import API helper
+import { API_BASE_URL } from '../config'; 
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState('appointments');
@@ -24,13 +24,12 @@ export default function AdminDashboard() {
   });
   const [clubSuccess, setClubSuccess] = useState(false);
 
-  // New Announcement Form State (Correctly initialized with image_url)
   const [announcementForm, setAnnouncementForm] = useState({
     title: '',
     category: 'Scholarships',
     summary: '',
     content: '',
-    image_url: '' // Added missing state key
+    image_url: '' 
   });
   const [announcementSuccess, setAnnouncementSuccess] = useState(false);
 
@@ -95,6 +94,26 @@ export default function AdminDashboard() {
     fetchAdminData(false); 
   }, [fetchAdminData]);
 
+  // File Upload to Base64 Converter Function (New)
+  const handleImageFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // Basic size validation (limit to 2MB to keep database light)
+      if (file.size > 2 * 1024 * 1024) {
+        alert('File size is too large. Please select an image smaller than 2MB.');
+        e.target.value = ""; // Clear file selector
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        // This will save the image as a long Base64 string directly in the state
+        setAnnouncementForm({ ...announcementForm, image_url: reader.result });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleStatusChange = async (id, newStatus) => {
     const token = localStorage.getItem('token');
     try {
@@ -146,8 +165,10 @@ export default function AdminDashboard() {
 
       if (response.ok) {
         setAnnouncementSuccess(true);
-        // Correctly reset form including image_url
         setAnnouncementForm({ title: '', category: 'Scholarships', summary: '', content: '', image_url: '' });
+        // Clear file input manually
+        const fileInput = document.getElementById('announcement-image');
+        if (fileInput) fileInput.value = "";
       } else {
         const data = await response.json();
         setError(data.error || 'Failed to post announcement.');
@@ -293,6 +314,7 @@ export default function AdminDashboard() {
           ) : (
             
             <>
+              {/* --- TAB 1: APPOINTMENTS --- */}
               {activeTab === 'appointments' && (
                 <div className="overflow-x-auto">
                   {appointments.length > 0 ? (
@@ -361,6 +383,7 @@ export default function AdminDashboard() {
                 </div>
               )}
 
+              {/* --- TAB 2: CONTACT MESSAGES --- */}
               {activeTab === 'messages' && (
                 <div className="space-y-4">
                   {messages.length > 0 ? (
@@ -524,29 +547,41 @@ export default function AdminDashboard() {
                         <option>General</option>
                       </select>
                     </div>
-                    {/* Added Cover Image URL Input Field */}
+                    {/* Interactively changed to a secure File Upload selector */}
                     <div>
-                      <label className="block text-xs font-semibold text-slate-600 uppercase mb-2">Cover Image URL</label>
+                      <label className="block text-xs font-semibold text-slate-600 uppercase mb-2">Cover Image Upload</label>
                       <input 
-                        type="text" 
-                        value={announcementForm.image_url}
-                        onChange={(e) => setAnnouncementForm({...announcementForm, image_url: e.target.value})}
-                        placeholder="e.g. https://images.unsplash.com/... (or leave blank)"
-                        className="w-full border border-slate-300 rounded px-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                      />
-                    </div>
-                    {/* Added Cover Image URL Input Field */}
-                    <div>
-                      <label className="block text-xs font-semibold text-slate-600 uppercase mb-2">Cover Image URL</label>
-                      <input 
-                        type="text" 
-                        value={announcementForm.image_url}
-                        onChange={(e) => setAnnouncementForm({...announcementForm, image_url: e.target.value})}
-                        placeholder="e.g. https://images.unsplash.com/... (or leave blank)"
-                        className="w-full border border-slate-300 rounded px-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                        id="announcement-image"
+                        type="file" 
+                        accept="image/*"
+                        onChange={handleImageFileChange}
+                        className="w-full border border-slate-300 rounded px-3 py-1.5 text-xs bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
                       />
                     </div>
                   </div>
+
+                  {/* Optional Image Preview Box */}
+                  {announcementForm.image_url && (
+                    <div className="border border-slate-200 rounded p-4 bg-slate-50 flex items-center space-x-4 max-w-sm">
+                      <div className="w-16 h-16 bg-slate-100 rounded border overflow-hidden">
+                        <img 
+                          src={announcementForm.image_url} 
+                          alt="Uploaded preview" 
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <div className="flex-grow">
+                        <p className="text-xs font-bold text-slate-800">Cover Image Preview Loaded</p>
+                        <button 
+                          type="button"
+                          onClick={() => setAnnouncementForm({...announcementForm, image_url: ''})}
+                          className="text-[10px] text-rose-700 hover:underline mt-1 font-semibold"
+                        >
+                          Remove Image
+                        </button>
+                      </div>
+                    </div>
+                  )}
 
                   <div>
                     <label className="block text-xs font-semibold text-slate-600 uppercase mb-2">Brief Summary (Will appear on homepage card)</label>
