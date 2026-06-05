@@ -11,12 +11,10 @@ export default function AdminDashboard() {
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
-  // Selected Org for posting bulletins
   const [selectedOrgId, setSelectedOrgId] = useState('');
   const [bulletinText, setBulletinText] = useState('');
   const [bulletinSuccess, setBulletinSuccess] = useState(false);
 
-  // New Club Form State
   const [clubForm, setClubForm] = useState({
     name: '',
     acronym: '',
@@ -56,10 +54,10 @@ export default function AdminDashboard() {
 
     try {
       const [apptRes, msgRes, orgRes] = await Promise.all([
-        fetch(`${API_BASE_URL}/api/appointments`, {
+        fetch('http://localhost:5000/api/appointments', {
           headers: { 'Authorization': `Bearer ${token}` }
         }),
-        fetch(`${API_BASE_URL}/api/contact`, {
+        fetch('http://localhost:5000/api/contact', {
           headers: { 'Authorization': `Bearer ${token}` }
         }),
         fetch(`${API_BASE_URL}/api/organizations`) 
@@ -100,7 +98,7 @@ export default function AdminDashboard() {
   const handleStatusChange = async (id, newStatus) => {
     const token = localStorage.getItem('token');
     try {
-      const response = await fetch(`${API_BASE_URL}/api/appointments/${id}`, {
+      const response = await fetch(`http://localhost:5000/api/appointments/${id}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -132,7 +130,7 @@ export default function AdminDashboard() {
     const token = localStorage.getItem('token');
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/announcements`, {
+      const response = await fetch('http://localhost:5000/api/announcements', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -167,7 +165,7 @@ export default function AdminDashboard() {
     const token = localStorage.getItem('token');
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/organizations`, {
+      const response = await fetch('http://localhost:5000/api/organizations', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -202,7 +200,7 @@ export default function AdminDashboard() {
     const token = localStorage.getItem('token');
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/organizations/${selectedOrgId}`, {
+      const response = await fetch(`http://localhost:5000/api/organizations/${selectedOrgId}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -295,7 +293,6 @@ export default function AdminDashboard() {
           ) : (
             
             <>
-              {/* --- TAB 1: APPOINTMENTS --- */}
               {activeTab === 'appointments' && (
                 <div className="overflow-x-auto">
                   {appointments.length > 0 ? (
@@ -364,7 +361,6 @@ export default function AdminDashboard() {
                 </div>
               )}
 
-              {/* --- TAB 2: CONTACT MESSAGES --- */}
               {activeTab === 'messages' && (
                 <div className="space-y-4">
                   {messages.length > 0 ? (
@@ -527,6 +523,17 @@ export default function AdminDashboard() {
                         <option>Guidance</option>
                         <option>General</option>
                       </select>
+                    </div>
+                    {/* Added Cover Image URL Input Field */}
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-600 uppercase mb-2">Cover Image URL</label>
+                      <input 
+                        type="text" 
+                        value={announcementForm.image_url}
+                        onChange={(e) => setAnnouncementForm({...announcementForm, image_url: e.target.value})}
+                        placeholder="e.g. https://images.unsplash.com/... (or leave blank)"
+                        className="w-full border border-slate-300 rounded px-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                      />
                     </div>
                     {/* Added Cover Image URL Input Field */}
                     <div>
