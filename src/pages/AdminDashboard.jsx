@@ -31,6 +31,16 @@ export default function AdminDashboard() {
   const [areaForm, setAreaForm] = useState({ title: '', description: '', key_operations: '' });
   const [staffForm, setStaffForm] = useState({ name: '', role: '', initials: '', color: 'bg-emerald-800' });
 
+  // Developer Tab 3: Services & Programs State (New)
+  const [allServices, setAllServices] = useState([]);
+  const [selectedServiceId, setSelectedServiceId] = useState('');
+  const [serviceForm, setServiceForm] = useState({
+    title: '',
+    description: '',
+    icon_class: 'fa-solid fa-brain',
+    service_type: 'service'
+  });
+
   // Admin Dashboard State
   const [selectedOrgId, setSelectedOrgId] = useState('');
   const [bulletinText, setBulletinText] = useState('');
@@ -72,27 +82,36 @@ export default function AdminDashboard() {
 
     try {
       if (userRole === 'developer') {
-        const response = await fetch(`${API_BASE_URL}/api/about`);
-        if (!response.ok) throw new Error('Failed to load About page text.');
-        const data = await response.json();
-        setAboutData(data);
+        // Fetch About Data and Services Data parallelly for Developer view
+        const [aboutRes, srvRes] = await Promise.all([
+          fetch(`${API_BASE_URL}/api/about`),
+          fetch(`${API_BASE_URL}/api/site-services`)
+        ]);
 
-        // Prepopulate first functional area card as default selected item, or fallback to new
-        if (data.functionalAreas.length > 0 && !selectedAreaId) {
-          const firstArea = data.functionalAreas[0];
+        if (!aboutRes.ok || !srvRes.ok) throw new Error('Failed to load portal databases.');
+
+        const abtData = await aboutRes.json();
+        const srvData = await srvRes.json();
+
+        setAboutData(abtData);
+        setAllServices(srvData);
+
+        // Prepopulate functional area selectors
+        if (abtData.functionalAreas.length > 0 && !selectedAreaId) {
+          const firstArea = abtData.functionalAreas[0];
           setSelectedAreaId(firstArea.id);
           setAreaForm({
             title: firstArea.title,
             description: firstArea.description,
             key_operations: firstArea.key_operations.join(', ')
           });
-        } else if (data.functionalAreas.length === 0 && !selectedAreaId) {
+        } else if (abtData.functionalAreas.length === 0 && !selectedAreaId) {
           setSelectedAreaId('new');
         }
 
-        // Prepopulate first staff member card as default selected item, or fallback to new
-        if (data.staff.length > 0 && !selectedStaffId) {
-          const firstStaff = data.staff[0];
+        // Prepopulate staff directory selectors
+        if (abtData.staff.length > 0 && !selectedStaffId) {
+          const firstStaff = abtData.staff[0];
           setSelectedStaffId(firstStaff.id);
           setStaffForm({
             name: firstStaff.name,
@@ -100,9 +119,24 @@ export default function AdminDashboard() {
             initials: firstStaff.initials,
             color: firstStaff.color || 'bg-emerald-800'
           });
-        } else if (data.staff.length === 0 && !selectedStaffId) {
+        } else if (abtData.staff.length === 0 && !selectedStaffId) {
           setSelectedStaffId('new');
         }
+
+        // Prepopulate services and programs selectors
+        if (srvData.length > 0 && !selectedServiceId) {
+          const firstSrv = srvData[0];
+          setSelectedServiceId(firstSrv.id);
+          setServiceForm({
+            title: firstSrv.title,
+            description: firstSrv.description,
+            icon_class: firstSrv.icon_class,
+            service_type: firstSrv.service_type
+          });
+        } else if (srvData.length === 0 && !selectedServiceId) {
+          setSelectedServiceId('new');
+        }
+
       } else {
         const [apptRes, msgRes, orgRes] = await Promise.all([
           fetch(`${API_BASE_URL}/api/appointments`, {
@@ -141,17 +175,15 @@ export default function AdminDashboard() {
     } finally {
       setIsLoading(false);
     }
-  }, [handleLogout, userRole, selectedAreaId, selectedStaffId, selectedOrgId]);
+  }, [handleLogout, userRole, selectedAreaId, selectedStaffId, selectedServiceId, selectedOrgId]);
 
   // ==========================================
   // 3. ACTION HANDLERS
   // ==========================================
 
-  // Drops Selector for Functional Area Card (Checks for 'new' option) [1]
   const handleAreaSelectChange = (id) => {
     setSelectedAreaId(id);
     if (id === 'new') {
-      // Clear out fields for fresh input
       setAreaForm({ title: '', description: '', key_operations: '' });
     } else {
       const area = aboutData.functionalAreas.find(a => a.id === parseInt(id));
@@ -165,11 +197,9 @@ export default function AdminDashboard() {
     }
   };
 
-  // Drops Selector for Staff Member Card (Checks for 'new' option) [1]
   const handleStaffSelectChange = (id) => {
     setSelectedStaffId(id);
     if (id === 'new') {
-      // Clear out fields for fresh input
       setStaffForm({ name: '', role: '', initials: '', color: 'bg-emerald-800' });
     } else {
       const person = aboutData.staff.find(s => s.id === parseInt(id));
@@ -179,6 +209,24 @@ export default function AdminDashboard() {
           role: person.role,
           initials: person.initials,
           color: person.color || 'bg-emerald-800'
+        });
+      }
+    }
+  };
+
+  // Selector drop trigger for Services & Programs [1]
+  const handleServiceSelectChange = (id) => {
+    setSelectedServiceId(id);
+    if (id === 'new') {
+      setServiceForm({ title: '', description: '', icon_class: 'fa-solid fa-brain', service_type: 'service' });
+    } else {
+      const srv = allServices.find(item => item.id === parseInt(id));
+      if (srv) {
+        setServiceForm({
+          title: srv.title,
+          description: srv.description,
+          icon_class: srv.icon_class,
+          service_type: srv.service_type
         });
       }
     }
@@ -262,7 +310,6 @@ export default function AdminDashboard() {
     }
   };
 
-  // Submit Functional Area (Detects whether it needs to POST (Add New) or PUT (Edit)) [1]
   const handleAreaSubmit = async (e) => {
     e.preventDefault();
     setDevSuccessMessage(null);
@@ -300,7 +347,7 @@ export default function AdminDashboard() {
 
       if (response.ok) {
         setDevSuccessMessage(isNew ? 'New Functional Area registered successfully!' : 'Functional Area updated successfully!');
-        setSelectedAreaId(''); // Reset selector trigger
+        setSelectedAreaId(''); 
         fetchAdminData(true);
       } else {
         const data = await response.json();
@@ -312,7 +359,6 @@ export default function AdminDashboard() {
     }
   };
 
-  // Submit Staff Profile (Detects whether it needs to POST (Add New) or PUT (Edit)) [1]
   const handleStaffSubmit = async (e) => {
     e.preventDefault();
     setDevSuccessMessage(null);
@@ -341,7 +387,7 @@ export default function AdminDashboard() {
 
       if (response.ok) {
         setDevSuccessMessage(isNew ? 'New staff profile added successfully!' : 'Staff profile updated successfully!');
-        setSelectedStaffId(''); // Reset selector trigger
+        setSelectedStaffId(''); 
         fetchAdminData(true);
       } else {
         const data = await response.json();
@@ -350,6 +396,47 @@ export default function AdminDashboard() {
     } catch (err) {
       console.error(err);
       setError('Connection error, could not save staff updates.');
+    }
+  };
+
+  // Submit Services & Programs (POST (Add New) or PUT (Edit)) [1]
+  const handleServiceSubmit = async (e) => {
+    e.preventDefault();
+    setDevSuccessMessage(null);
+    setError(null);
+    const token = localStorage.getItem('token');
+
+    const isNew = selectedServiceId === 'new';
+    const url = isNew 
+      ? `${API_BASE_URL}/api/site-services` 
+      : `${API_BASE_URL}/api/site-services/${selectedServiceId}`;
+
+    try {
+      const response = await fetch(url, {
+        method: isNew ? 'POST' : 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(serviceForm)
+      });
+
+      if (response.status === 401 || response.status === 403) {
+        handleLogout();
+        return;
+      }
+
+      if (response.ok) {
+        setDevSuccessMessage(isNew ? 'New service/program registered successfully!' : 'Service/program updated successfully!');
+        setSelectedServiceId(''); // Reset selector trigger to fetch fresh
+        fetchAdminData(true);
+      } else {
+        const data = await response.json();
+        setError(data.error || 'Failed to save service/program updates.');
+      }
+    } catch (err) {
+      console.error(err);
+      setError('Connection error, could not save updates.');
     }
   };
 
@@ -535,13 +622,87 @@ export default function AdminDashboard() {
               </div>
             )}
 
-            {/* --- TAB 2: SERVICES --- */}
+            {/* --- TAB 2: SERVICES (Fully Functional Services and Flagship Programs Editor) --- */}
             {devTab === 'services' && (
-              <div className="text-center py-20 text-slate-500">
-                <span className="text-4xl">🚧</span>
-                <h3 className="font-bold text-lg mt-4 text-slate-800">Services Editor</h3>
-                <p className="text-xs text-slate-400 mt-1">will add this one soon</p>
-              </div>
+              <form onSubmit={handleServiceSubmit} className="max-w-2xl mx-auto space-y-6">
+                <h3 className="text-lg font-bold text-slate-800 border-b pb-2">Configure Services & Programs</h3>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-600 uppercase mb-2">Select Service/Program to Edit (Or select Register New)</label>
+                  <select 
+                    value={selectedServiceId}
+                    onChange={(e) => handleServiceSelectChange(e.target.value)}
+                    className="w-full border border-slate-300 bg-white rounded px-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                  >
+                    <option value="new">+ Register New Service/Program</option>
+                    {allServices.map((item) => (
+                      <option key={item.id} value={item.id}>
+                        [{item.service_type.toUpperCase()}] {item.title}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-600 uppercase mb-2">Title</label>
+                  <input 
+                    type="text" required
+                    value={serviceForm.title}
+                    onChange={(e) => setServiceForm({ ...serviceForm, title: e.target.value })}
+                    placeholder="e.g. Guidance & Counseling"
+                    className="w-full border border-slate-300 rounded px-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-600 uppercase mb-2">Classification Type</label>
+                    <select 
+                      value={serviceForm.service_type}
+                      onChange={(e) => setServiceForm({ ...serviceForm, service_type: e.target.value })}
+                      className="w-full border border-slate-300 bg-white rounded px-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                    >
+                      <option value="service">Service (Guidance, Discipline, etc.)</option>
+                      <option value="program">Program (Invictus, CORE, etc.)</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-600 uppercase mb-2">Font Awesome Icon Class</label>
+                    <select 
+                      value={serviceForm.icon_class}
+                      onChange={(e) => setServiceForm({ ...serviceForm, icon_class: e.target.value })}
+                      className="w-full border border-slate-300 bg-white rounded px-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                    >
+                      <option value="fa-solid fa-brain">🧠 fa-brain (Mental Wellness)</option>
+                      <option value="fa-solid fa-scale-balanced">⚖️ fa-scale-balanced (Discipline/Justice)</option>
+                      <option value="fa-solid fa-graduation-cap">🎓 fa-graduation-cap (Scholarships)</option>
+                      <option value="fa-solid fa-certificate">📜 fa-certificate (Character Certification)</option>
+                      <option value="fa-solid fa-trophy">🏆 fa-trophy (Awards/Excellence)</option>
+                      <option value="fa-solid fa-users-gear">⚙️ fa-users-gear (Organizations Coordination)</option>
+                      <option value="fa-solid fa-school">🏫 fa-school (Campus/Classroom)</option>
+                      <option value="fa-solid fa-award">🎗️ fa-award (Merits)</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-600 uppercase mb-2">Description</label>
+                  <textarea 
+                    required rows="4"
+                    value={serviceForm.description}
+                    onChange={(e) => setServiceForm({ ...serviceForm, description: e.target.value })}
+                    placeholder="Describe the operational core of this service or program..."
+                    className="w-full border border-slate-300 rounded px-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                  ></textarea>
+                </div>
+
+                <button 
+                  type="submit"
+                  className="w-full bg-emerald-800 hover:bg-emerald-900 text-white font-bold py-3 rounded transition shadow-sm cursor-pointer"
+                >
+                  {selectedServiceId === 'new' ? 'Register and Publish Service/Program' : 'Save Services & Programs Revisions'}
+                </button>
+              </form>
             )}
 
             {/* --- TAB 3: ABOUT OSAS EDITOR --- */}

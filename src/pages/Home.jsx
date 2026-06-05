@@ -3,34 +3,47 @@ import { API_BASE_URL } from '../config';
 
 export default function Home() {
   const [announcements, setAnnouncements] = useState([]);
+  const [services, setServices] = useState([]); // New State
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-
+  
   useEffect(() => {
-    const fetchAnnouncements = async () => {
+    const fetchHomeData = async () => {
       try {
-        const response = await fetch(`${API_BASE_URL}/api/announcements`);
-        if (!response.ok) {
-          throw new Error('Failed to retrieve announcements.');
+        const [annRes, srvRes] = await Promise.all([
+          fetch(`${API_BASE_URL}/api/announcements`),
+          fetch(`${API_BASE_URL}/api/site-services`) // Dynamic service endpoint
+        ]);
+        
+        if (!annRes.ok || !srvRes.ok) {
+          throw new Error('Failed to retrieve homepage data.');
         }
-        const data = await response.json();
-        setAnnouncements(data);
+        
+        const annData = await annRes.json();
+        const srvData = await srvRes.json();
+        
+        setAnnouncements(annData);
+        setServices(srvData);
       } catch (err) {
-        console.error('Error fetching announcements:', err);
-        setError('Unable to load current announcements at this time.');
+        console.error('Error fetching homepage data:', err);
+        setError('Unable to load current campus data at this time.');
       } finally {
         setIsLoading(false);
       }
     };
-
-    fetchAnnouncements();
+    
+    fetchHomeData();
   }, []);
-
+  
   const formatDate = (dateString) => {
     const options = { year: 'numeric', month: 'long', day: 'numeric' };
     return new Date(dateString).toLocaleDateString(undefined, options);
   };
-
+  
+  // Dynamically split services and programs on the client side [1]
+  const renderedServices = services.filter(item => item.service_type === 'service');
+  const renderedPrograms = services.filter(item => item.service_type === 'program');
+  
   return (
     <div className="bg-slate-50 min-h-screen">
       
@@ -67,7 +80,7 @@ export default function Home() {
             <p className="text-slate-500 text-sm">Loading current announcements...</p>
           </div>
         ) : error ? (
-          <div className="bg-rose-50 border border-rose-200 text-rose-800 p-6 rounded-lg text-sm text-center">
+          <div className="bg-rose-50 border border-rose-200 text-rose-850 p-6 rounded-lg text-sm text-center">
             ⚠️ {error}
           </div>
         ) : announcements.length > 0 ? (
@@ -112,9 +125,9 @@ export default function Home() {
             <div className="w-14 h-14 bg-emerald-50 text-emerald-800 rounded-full flex items-center justify-center text-2xl mx-auto">
               📢
             </div>
-            <h3 className="text-lg font-bold text-slate-900">No announcements at the moment</h3>
+            <h3 className="text-lg font-bold text-slate-900">Campus Bulletins are Clear</h3>
             <p className="text-xs text-slate-600 leading-relaxed">
-              We don't have any active updates right now. Check back soon for the latest news on scholarships, student activities, counseling services, and campus events.
+              There are currently no active announcements in the OSAS database. Please check back soon for updates regarding scholarships, student activities, and guidance counseling schedules!
             </p>
             <div className="pt-2">
               <span className="inline-block text-[10px] font-bold text-emerald-800 bg-emerald-50 px-3 py-1 rounded-full uppercase tracking-wider">
@@ -125,11 +138,7 @@ export default function Home() {
         )}
       </section>
 
-      {/* 
-        ================= SERVICES AND PROGRAMS SECTION ================= 
-        Divided into a 2/3 column layout (Services) and 1/3 column layout (Programs)
-        using elegant styling and Font Awesome integration.
-      */}
+      {/* Services and Flagship Programs Grid */}
       <section className="bg-white py-16 border-t border-b border-slate-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           
@@ -139,103 +148,57 @@ export default function Home() {
           
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
             
-            {/* LEFT COLUMN: SERVICES (Takes up 2/3 of space on desktop) */}
+            {/* LEFT COLUMN: SERVICES */}
             <div className="lg:col-span-2 space-y-6">
               <h3 className="text-xs font-bold uppercase tracking-widest text-emerald-800 mb-4 border-b border-emerald-100 pb-2">
                 Our Services
               </h3>
               
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                
-                {/* 1. Guidance */}
-                <div className="p-6 bg-slate-50/50 rounded-lg border border-slate-200 hover:border-emerald-400 hover:shadow-sm transition flex flex-col justify-between">
-                  <div>
-                    <div className="h-10 w-10 bg-emerald-50 text-emerald-800 rounded-lg flex items-center justify-center mb-4 text-base shadow-sm border border-emerald-100/40">
-                      <i className="fa-solid fa-brain"></i>
+                {renderedServices.length > 0 ? (
+                  renderedServices.map((srv) => (
+                    <div key={srv.id} className="p-6 bg-slate-50/50 rounded-lg border border-slate-200 hover:border-emerald-400 hover:shadow-sm transition flex flex-col justify-between">
+                      <div>
+                        <div className="h-10 w-10 bg-emerald-50 text-emerald-800 rounded-lg flex items-center justify-center mb-4 text-base shadow-sm border border-emerald-100/40">
+                          <i className={srv.icon_class || 'fa-solid fa-brain'}></i>
+                        </div>
+                        <h4 className="font-bold text-base text-slate-800 mb-2">{srv.title}</h4>
+                        <p className="text-xs text-slate-600 leading-relaxed">
+                          {srv.description}
+                        </p>
+                      </div>
                     </div>
-                    <h4 className="font-bold text-base text-slate-800 mb-2">Guidance & Counseling</h4>
-                    <p className="text-xs text-slate-600 leading-relaxed">
-                      Confidential testing, counseling sessions, and student guidance support for mental well-being.
-                    </p>
-                  </div>
-                </div>
-
-                {/* 2. Discipline */}
-                <div className="p-6 bg-slate-50/50 rounded-lg border border-slate-200 hover:border-emerald-400 hover:shadow-sm transition flex flex-col justify-between">
-                  <div>
-                    <div className="h-10 w-10 bg-emerald-50 text-emerald-800 rounded-lg flex items-center justify-center mb-4 text-base shadow-sm border border-emerald-100/40">
-                      <i className="fa-solid fa-scale-balanced"></i>
-                    </div>
-                    <h4 className="font-bold text-base text-slate-800 mb-2">Student Discipline</h4>
-                    <p className="text-xs text-slate-600 leading-relaxed">
-                      Advocating student rights while ensuring discipline procedures and handbook compliance.
-                    </p>
-                  </div>
-                </div>
-
-                {/* 3. Scholarship */}
-                <div className="p-6 bg-slate-50/50 rounded-lg border border-slate-200 hover:border-emerald-400 hover:shadow-sm transition flex flex-col justify-between">
-                  <div>
-                    <div className="h-10 w-10 bg-emerald-50 text-emerald-800 rounded-lg flex items-center justify-center mb-4 text-base shadow-sm border border-emerald-100/40">
-                      <i className="fa-solid fa-graduation-cap"></i>
-                    </div>
-                    <h4 className="font-bold text-base text-slate-800 mb-2">Scholarship</h4>
-                    <p className="text-xs text-slate-600 leading-relaxed">
-                      Evaluating tuition assistance, local government grants, and financial support allocations.
-                    </p>
-                  </div>
-                </div>
-
-                {/* 4. Good Moral */}
-                <div className="p-6 bg-slate-50/50 rounded-lg border border-slate-200 hover:border-emerald-400 hover:shadow-sm transition flex flex-col justify-between">
-                  <div>
-                    <div className="h-10 w-10 bg-emerald-50 text-emerald-800 rounded-lg flex items-center justify-center mb-4 text-base shadow-sm border border-emerald-100/40">
-                      <i className="fa-solid fa-certificate"></i>
-                    </div>
-                    <h4 className="font-bold text-base text-slate-800 mb-2">Good Moral</h4>
-                    <p className="text-xs text-slate-600 leading-relaxed">
-                      Processing clearance checklists and issuing official Certificates of Good Moral Character.
-                    </p>
-                  </div>
-                </div>
-
+                  ))
+                ) : (
+                  <p className="text-xs text-slate-400 italic">No services listed.</p>
+                )}
               </div>
             </div>
 
-            {/* RIGHT COLUMN: PROGRAMS (Takes up 1/3 of space on desktop) */}
+            {/* RIGHT COLUMN: PROGRAMS */}
             <div className="lg:col-span-1 space-y-6">
               <h3 className="text-xs font-bold uppercase tracking-widest text-emerald-800 mb-4 border-b border-emerald-100 pb-2">
                 Flagship Programs
               </h3>
               
               <div className="grid grid-cols-1 gap-6">
-                
-                {/* 1. Invictus Excellence Awards */}
-                <div className="p-6 bg-slate-50/50 rounded-lg border border-slate-200 hover:border-emerald-400 hover:shadow-sm transition flex flex-col justify-between">
-                  <div>
-                    <div className="h-10 w-10 bg-emerald-50 text-emerald-800 rounded-lg flex items-center justify-center mb-4 text-base shadow-sm border border-emerald-100/40">
-                      <i className="fa-solid fa-trophy"></i>
+                {renderedPrograms.length > 0 ? (
+                  renderedPrograms.map((prg) => (
+                    <div key={prg.id} className="p-6 bg-slate-50/50 rounded-lg border border-slate-200 hover:border-emerald-400 hover:shadow-sm transition flex flex-col justify-between">
+                      <div>
+                        <div className="h-10 w-10 bg-emerald-50 text-emerald-800 rounded-lg flex items-center justify-center mb-4 text-base shadow-sm border border-emerald-100/40">
+                          <i className={prg.icon_class || 'fa-solid fa-trophy'}></i>
+                        </div>
+                        <h4 className="font-bold text-base text-slate-800 mb-2">{prg.title}</h4>
+                        <p className="text-xs text-slate-600 leading-relaxed">
+                          {prg.description}
+                        </p>
+                      </div>
                     </div>
-                    <h4 className="font-bold text-base text-slate-800 mb-2">Invictus Excellence Awards</h4>
-                    <p className="text-xs text-slate-600 leading-relaxed">
-                      Our premier annual program recognizing outstanding student achievements and academic excellence.
-                    </p>
-                  </div>
-                </div>
-
-                {/* 2. CORE */}
-                <div className="p-6 bg-slate-50/50 rounded-lg border border-slate-200 hover:border-emerald-400 hover:shadow-sm transition flex flex-col justify-between">
-                  <div>
-                    <div className="h-10 w-10 bg-emerald-50 text-emerald-800 rounded-lg flex items-center justify-center mb-4 text-base shadow-sm border border-emerald-100/40">
-                      <i className="fa-solid fa-users-gear"></i>
-                    </div>
-                    <h4 className="font-bold text-base text-slate-800 mb-2">CORE</h4>
-                    <p className="text-xs text-slate-600 leading-relaxed">
-                      Coordinating and supervising all accredited student organizations (Major, Program-Limited, and College Orgs).
-                    </p>
-                  </div>
-                </div>
-
+                  ))
+                ) : (
+                  <p className="text-xs text-slate-400 italic">No flagship programs listed.</p>
+                )}
               </div>
             </div>
 
