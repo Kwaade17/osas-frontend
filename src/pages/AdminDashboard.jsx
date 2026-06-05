@@ -31,14 +31,14 @@ export default function AdminDashboard() {
   const [areaForm, setAreaForm] = useState({ title: '', description: '', key_operations: '' });
   const [staffForm, setStaffForm] = useState({ name: '', role: '', initials: '', color: 'bg-emerald-800' });
 
-  // Developer Tab: Home Editor State (New)
+  // Developer Tab: Home Editor State
   const [homeForm, setHomeForm] = useState({
     hero_title: '',
     hero_subtitle: '',
     hero_bg_image: ''
   });
 
-  // Developer Tab: Services & Programs State
+  // Developer Tab: Home Grid (Site Services & Programs) State [1]
   const [allServices, setAllServices] = useState([]);
   const [selectedServiceId, setSelectedServiceId] = useState('');
   const [serviceForm, setServiceForm] = useState({
@@ -46,6 +46,26 @@ export default function AdminDashboard() {
     description: '',
     icon_class: 'fa-solid fa-brain',
     service_type: 'service'
+  });
+
+  // Developer Tab: Services Page CMS State (New) [1]
+  const [pageServices, setPageServices] = useState([]);
+  const [selectedPageServiceId, setSelectedPageServiceId] = useState('');
+  const [pageServiceForm, setPageServiceForm] = useState({
+    title: '',
+    icon_emoji: '🧠',
+    description: '',
+    feature_one_title: '',
+    feature_one_desc: '',
+    feature_two_title: '',
+    feature_two_desc: '',
+    feature_three_title: '',
+    feature_three_desc: '',
+    instructions: '',
+    sidebar_title: '',
+    sidebar_text: '',
+    btn_primary_text: '',
+    btn_secondary_text: ''
   });
 
   // Admin Dashboard State
@@ -89,23 +109,25 @@ export default function AdminDashboard() {
 
     try {
       if (userRole === 'developer') {
-        // Fetch About, Services, and Home Landing Details in parallel [1]
-        const [aboutRes, srvRes, homeRes] = await Promise.all([
+        const [aboutRes, srvRes, homeRes, pgSrvRes] = await Promise.all([
           fetch(`${API_BASE_URL}/api/about`),
           fetch(`${API_BASE_URL}/api/site-services`),
-          fetch(`${API_BASE_URL}/api/home`)
+          fetch(`${API_BASE_URL}/api/home`),
+          fetch(`${API_BASE_URL}/api/services-page`) // Fetch dynamic services page [1]
         ]);
 
-        if (!aboutRes.ok || !srvRes.ok || !homeRes.ok) throw new Error('Failed to load portal databases.');
+        if (!aboutRes.ok || !srvRes.ok || !homeRes.ok || !pgSrvRes.ok) throw new Error('Failed to load portal databases.');
 
         const abtData = await aboutRes.json();
         const srvData = await srvRes.json();
         const hData = await homeRes.json();
+        const pgSrvData = await pgSrvRes.json();
 
         setAboutData(abtData);
         setAllServices(srvData);
+        setPageServices(pgSrvData);
         
-        // Prepopulate Home Editor Form [1]
+        // Prepopulate Home Editor Form
         if (hData.hero_title) {
           setHomeForm({
             hero_title: hData.hero_title || '',
@@ -114,7 +136,7 @@ export default function AdminDashboard() {
           });
         }
 
-        // Prepopulate functional area selectors
+        // Prepopulate functional area selectors (About Page)
         if (abtData.functionalAreas.length > 0 && !selectedAreaId) {
           const firstArea = abtData.functionalAreas[0];
           setSelectedAreaId(firstArea.id);
@@ -127,7 +149,7 @@ export default function AdminDashboard() {
           setSelectedAreaId('new');
         }
 
-        // Prepopulate staff directory selectors
+        // Prepopulate staff selectors (About Page)
         if (abtData.staff.length > 0 && !selectedStaffId) {
           const firstStaff = abtData.staff[0];
           setSelectedStaffId(firstStaff.id);
@@ -141,7 +163,7 @@ export default function AdminDashboard() {
           setSelectedStaffId('new');
         }
 
-        // Prepopulate services and programs selectors
+        // Prepopulate home-grid services selectors (Home Page)
         if (srvData.length > 0 && !selectedServiceId) {
           const firstSrv = srvData[0];
           setSelectedServiceId(firstSrv.id);
@@ -153,6 +175,28 @@ export default function AdminDashboard() {
           });
         } else if (srvData.length === 0 && !selectedServiceId) {
           setSelectedServiceId('new');
+        }
+
+        // Prepopulate actual Services Page selectors (Services Page) [1]
+        if (pgSrvData.length > 0 && !selectedPageServiceId) {
+          const firstPageSrv = pgSrvData[0];
+          setSelectedPageServiceId(firstPageSrv.id);
+          setPageServiceForm({
+            title: firstPageSrv.title,
+            icon_emoji: firstPageSrv.icon_emoji,
+            description: firstPageSrv.description,
+            feature_one_title: firstPageSrv.feature_one_title,
+            feature_one_desc: firstPageSrv.feature_one_desc,
+            feature_two_title: firstPageSrv.feature_two_title,
+            feature_two_desc: firstPageSrv.feature_two_desc,
+            feature_three_title: firstPageSrv.feature_three_title || '',
+            feature_three_desc: firstPageSrv.feature_three_desc || '',
+            instructions: firstPageSrv.instructions || '',
+            sidebar_title: firstPageSrv.sidebar_title,
+            sidebar_text: pgSrvData[0].sidebar_text,
+            btn_primary_text: firstPageSrv.btn_primary_text,
+            btn_secondary_text: firstPageSrv.btn_secondary_text
+          });
         }
 
       } else {
@@ -193,10 +237,10 @@ export default function AdminDashboard() {
     } finally {
       setIsLoading(false);
     }
-  }, [handleLogout, userRole, selectedAreaId, selectedStaffId, selectedServiceId, selectedOrgId]);
+  }, [handleLogout, userRole, selectedAreaId, selectedStaffId, selectedServiceId, selectedPageServiceId, selectedOrgId]);
 
   // ==========================================
-  // 3. ACTION HANDLERS
+  // 3. ACTION HANDLERS (Properly Scoped at Top) [1]
   // ==========================================
 
   const handleAreaSelectChange = (id) => {
@@ -249,6 +293,30 @@ export default function AdminDashboard() {
     }
   };
 
+  // Selector dropdown change for the actual Services Page [1]
+  const handlePageServiceSelectChange = (id) => {
+    setSelectedPageServiceId(id);
+    const srv = pageServices.find(item => item.id === parseInt(id));
+    if (srv) {
+      setPageServiceForm({
+        title: srv.title,
+        icon_emoji: srv.icon_emoji,
+        description: srv.description,
+        feature_one_title: srv.feature_one_title,
+        feature_one_desc: srv.feature_one_desc,
+        feature_two_title: srv.feature_two_title,
+        feature_two_desc: srv.feature_two_desc,
+        feature_three_title: srv.feature_three_title || '',
+        feature_three_desc: srv.feature_three_desc || '',
+        instructions: srv.instructions || '',
+        sidebar_title: srv.sidebar_title,
+        sidebar_text: srv.sidebar_text,
+        btn_primary_text: srv.btn_primary_text,
+        btn_secondary_text: srv.btn_secondary_text
+      });
+    }
+  };
+
   const handleImageFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -265,7 +333,6 @@ export default function AdminDashboard() {
     }
   };
 
-  // Convert and handle home background photo changes (New)
   const handleHomeImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -282,6 +349,7 @@ export default function AdminDashboard() {
     }
   };
 
+  // Re-added handleStatusChange handler before returns (Fixes undefined error) [1]
   const handleStatusChange = async (id, newStatus) => {
     const token = localStorage.getItem('token');
     try {
@@ -310,7 +378,6 @@ export default function AdminDashboard() {
     }
   };
 
-  // Submit Home Landing Revisions (New) [1]
   const handleHomeSubmit = async (e) => {
     e.preventDefault();
     setDevSuccessMessage(null);
@@ -468,6 +535,7 @@ export default function AdminDashboard() {
     }
   };
 
+  // Submit Home Grid items: POST (Add New) or PUT (Edit) [1]
   const handleServiceSubmit = async (e) => {
     e.preventDefault();
     setDevSuccessMessage(null);
@@ -501,6 +569,41 @@ export default function AdminDashboard() {
       } else {
         const data = await response.json();
         setError(data.error || 'Failed to save service/program updates.');
+      }
+    } catch (err) {
+      console.error(err);
+      setError('Connection error, could not save updates.');
+    }
+  };
+
+  // Submit Services Page edits (Row 1, 2, or 3) [1]
+  const handlePageServiceSubmit = async (e) => {
+    e.preventDefault();
+    setDevSuccessMessage(null);
+    setError(null);
+    const token = localStorage.getItem('token');
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/services-page/${selectedPageServiceId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(pageServiceForm)
+      });
+
+      if (response.status === 401 || response.status === 403) {
+        handleLogout();
+        return;
+      }
+
+      if (response.ok) {
+        setDevSuccessMessage('Services Page details updated successfully!');
+        fetchAdminData(true);
+      } else {
+        const data = await response.json();
+        setError(data.error || 'Failed to update Services page content.');
       }
     } catch (err) {
       console.error(err);
@@ -615,7 +718,7 @@ export default function AdminDashboard() {
   };
 
   // ==========================================
-  // 4. SECURE DECOUPLED EFFECT
+  // 4. SECURE DECOUPLED EFFECT (Wrapped in Timeout)
   // ==========================================
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -681,158 +784,323 @@ export default function AdminDashboard() {
             {error && <div className="bg-rose-50 border border-rose-200 text-rose-850 p-3 rounded text-xs mb-6">⚠️ {error}</div>}
             {devSuccessMessage && <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 p-3 rounded text-xs font-semibold mb-6">✅ {devSuccessMessage}</div>}
 
-            {/* --- TAB 1: HOME (Fully Functional Home Page Landing CMS) --- */}
+            {/* --- TAB 1: HOME (Fully Functional Home Page Landing & Grid CMS) [1] --- */}
             {devTab === 'home' && (
-              <form onSubmit={handleHomeSubmit} className="max-w-2xl mx-auto space-y-6">
-                <h3 className="text-lg font-bold text-slate-800 border-b pb-2">Configure Homepage Landing Details</h3>
+              <div className="space-y-12">
+                
+                {/* Section A: Banner */}
+                <form onSubmit={handleHomeSubmit} className="space-y-4 p-6 bg-slate-50 border border-slate-200 rounded-lg">
+                  <h3 className="font-extrabold text-slate-800 text-base border-b pb-2">Section A: Configure Homepage Landing Details</h3>
 
-                <div>
-                  <label className="block text-xs font-semibold text-slate-600 uppercase mb-2">Hero Landing Title</label>
-                  <input 
-                    type="text" required
-                    value={homeForm.hero_title}
-                    onChange={(e) => setHomeForm({ ...homeForm, hero_title: e.target.value })}
-                    placeholder="e.g. Nurturing Student Welfare & Growth Outside the Classroom"
-                    className="w-full border border-slate-300 rounded px-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-slate-600 uppercase mb-2">Hero Subtitle/Description</label>
-                  <textarea 
-                    required rows="3"
-                    value={homeForm.hero_subtitle}
-                    onChange={(e) => setHomeForm({ ...homeForm, hero_subtitle: e.target.value })}
-                    placeholder="e.g. Supporting your journey at La Carlota City College..."
-                    className="w-full border border-slate-300 rounded px-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                  ></textarea>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 items-center">
-                  {/* Background Image Upload */}
                   <div>
-                    <label className="block text-xs font-semibold text-slate-600 uppercase mb-2">Upload Landing Background Image</label>
+                    <label className="block text-xs font-semibold text-slate-600 uppercase mb-2">Hero Landing Title</label>
                     <input 
-                      id="home-bg-image"
-                      type="file" 
-                      accept="image/*"
-                      onChange={handleHomeImageChange}
+                      type="text" required
+                      value={homeForm.hero_title}
+                      onChange={(e) => setHomeForm({ ...homeForm, hero_title: e.target.value })}
+                      className="w-full border border-slate-300 rounded px-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500 bg-white"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-600 uppercase mb-2">Hero Subtitle/Description</label>
+                    <textarea 
+                      required rows="3"
+                      value={homeForm.hero_subtitle}
+                      onChange={(e) => setHomeForm({ ...homeForm, hero_subtitle: e.target.value })}
+                      className="w-full border border-slate-300 rounded px-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500 bg-white"
+                    ></textarea>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 items-center">
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-600 uppercase mb-2">Upload Landing Background Image</label>
+                      <input 
+                        id="home-bg-image"
+                        type="file" 
+                        accept="image/*"
+                        onChange={handleHomeImageChange}
+                        className="w-full border border-slate-300 rounded px-3 py-1.5 text-xs bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                      />
+                    </div>
+
+                    {homeForm.hero_bg_image && (
+                      <div className="border border-slate-200 rounded p-3 bg-slate-50 flex items-center space-x-4">
+                        <div className="w-16 h-16 bg-slate-100 rounded border overflow-hidden">
+                          <img 
+                            src={homeForm.hero_bg_image} 
+                            alt="Landing Backdrop Preview" 
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <div className="flex-grow">
+                          <p className="text-[10px] font-bold text-slate-800 leading-snug">Landing Backdrop Preview Loaded</p>
+                          <button 
+                            type="button"
+                            onClick={() => setHomeForm({...homeForm, hero_bg_image: '/school-bg.jpg'})}
+                            className="text-[10px] text-rose-700 hover:underline mt-1 font-semibold block cursor-pointer"
+                          >
+                            Reset to default
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  <button 
+                    type="submit"
+                    className="bg-emerald-800 hover:bg-emerald-900 text-white font-bold py-2 px-6 rounded text-xs transition cursor-pointer"
+                  >
+                    Save Homepage Hero Revisions
+                  </button>
+                </form>
+
+                {/* Section B: Grid Services & Programs (The 6 home cards) [1] */}
+                <form onSubmit={handleServiceSubmit} className="space-y-4 p-6 bg-slate-50 border border-slate-200 rounded-lg">
+                  <h3 className="font-extrabold text-slate-800 text-base border-b pb-2">Section B: Configure Home Services & Programs Grid</h3>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-600 uppercase mb-2">Select Grid Item to Edit (Or select Register New)</label>
+                    <select 
+                      value={selectedServiceId}
+                      onChange={(e) => handleServiceSelectChange(e.target.value)}
+                      className="w-full border border-slate-300 bg-white rounded px-3 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                    >
+                      <option value="new">+ Register New Grid Item</option>
+                      {allServices.map((item) => (
+                        <option key={item.id} value={item.id}>
+                          [{item.service_type.toUpperCase()}] {item.title}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-600 uppercase mb-1">Title</label>
+                    <input 
+                      type="text" required
+                      value={serviceForm.title}
+                      onChange={(e) => setServiceForm({ ...serviceForm, title: e.target.value })}
+                      placeholder="e.g. Guidance & Counseling"
                       className="w-full border border-slate-300 rounded px-3 py-1.5 text-xs bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
                     />
                   </div>
 
-                  {/* Dynamic Image Preview Box */}
-                  {homeForm.hero_bg_image && (
-                    <div className="border border-slate-200 rounded p-3 bg-slate-50 flex items-center space-x-4">
-                      <div className="w-16 h-16 bg-slate-100 rounded border overflow-hidden">
-                        <img 
-                          src={homeForm.hero_bg_image} 
-                          alt="Landing Backdrop Preview" 
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                      <div className="flex-grow">
-                        <p className="text-[10px] font-bold text-slate-800 leading-snug">Landing Backdrop Preview Loaded</p>
-                        <button 
-                          type="button"
-                          onClick={() => setHomeForm({...homeForm, hero_bg_image: '/school-bg.jpg'})}
-                          className="text-[10px] text-rose-700 hover:underline mt-1 font-semibold block"
-                        >
-                          Reset to default
-                        </button>
-                      </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-600 uppercase mb-1">Classification Type</label>
+                      <select 
+                        value={serviceForm.service_type}
+                        onChange={(e) => setServiceForm({ ...serviceForm, service_type: e.target.value })}
+                        className="w-full border border-slate-300 bg-white rounded px-3 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                      >
+                        <option value="service">Service (Guidance, Discipline, etc.)</option>
+                        <option value="program">Program (Invictus, CORE, etc.)</option>
+                      </select>
                     </div>
-                  )}
-                </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-600 uppercase mb-1">Font Awesome Icon Class</label>
+                      <select 
+                        value={serviceForm.icon_class}
+                        onChange={(e) => setServiceForm({ ...serviceForm, icon_class: e.target.value })}
+                        className="w-full border border-slate-300 bg-white rounded px-3 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                      >
+                        <option value="fa-solid fa-brain">🧠 fa-brain (Mental Wellness)</option>
+                        <option value="fa-solid fa-scale-balanced">⚖️ fa-scale-balanced (Discipline/Justice)</option>
+                        <option value="fa-solid fa-graduation-cap">🎓 fa-graduation-cap (Scholarships)</option>
+                        <option value="fa-solid fa-certificate">📜 fa-certificate (Character Certification)</option>
+                        <option value="fa-solid fa-trophy">🏆 fa-trophy (Awards/Excellence)</option>
+                        <option value="fa-solid fa-users-gear">⚙️ fa-users-gear (Organizations Coordination)</option>
+                        <option value="fa-solid fa-school">🏫 fa-school (Campus/Classroom)</option>
+                        <option value="fa-solid fa-award">🎗️ fa-award (Merits)</option>
+                      </select>
+                    </div>
+                  </div>
 
-                <button 
-                  type="submit"
-                  className="w-full bg-emerald-800 hover:bg-emerald-900 text-white font-bold py-3 rounded transition shadow-sm cursor-pointer"
-                >
-                  Save Homepage Hero Revisions
-                </button>
-              </form>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-600 uppercase mb-1">Description</label>
+                    <textarea 
+                      required rows="3"
+                      value={serviceForm.description}
+                      onChange={(e) => setServiceForm({ ...serviceForm, description: e.target.value })}
+                      placeholder="Core focus details..."
+                      className="w-full border border-slate-300 rounded px-3 py-1.5 text-xs bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                    ></textarea>
+                  </div>
+
+                  <button type="submit" className="bg-emerald-800 hover:bg-emerald-900 text-white font-bold py-2 px-6 rounded text-xs transition cursor-pointer">
+                    {selectedServiceId === 'new' ? 'Register and Publish Grid Item' : 'Save Section B Grid Revisions'}
+                  </button>
+                </form>
+
+              </div>
             )}
 
-            {/* --- TAB 2: SERVICES --- */}
+            {/* --- TAB 2: SERVICES (The actual Services Page editor) [1] --- */}
             {devTab === 'services' && (
-              <form onSubmit={handleServiceSubmit} className="max-w-2xl mx-auto space-y-6">
-                <h3 className="text-lg font-bold text-slate-800 border-b pb-2">Configure Services & Programs</h3>
+              <form onSubmit={handlePageServiceSubmit} className="max-w-2xl mx-auto space-y-6">
+                <h3 className="text-lg font-bold text-slate-800 border-b pb-2">Configure Services Page Layout</h3>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-600 uppercase mb-2">Select Service/Program to Edit (Or select Register New)</label>
+                  <label className="block text-xs font-semibold text-slate-600 uppercase mb-2">Select Service to Edit</label>
                   <select 
-                    value={selectedServiceId}
-                    onChange={(e) => handleServiceSelectChange(e.target.value)}
+                    value={selectedPageServiceId}
+                    onChange={(e) => handlePageServiceSelectChange(e.target.value)}
                     className="w-full border border-slate-300 bg-white rounded px-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500"
                   >
-                    <option value="new">+ Register New Service/Program</option>
-                    {allServices.map((item) => (
+                    {pageServices.map((item) => (
                       <option key={item.id} value={item.id}>
-                        [{item.service_type.toUpperCase()}] {item.title}
+                        {item.title}
                       </option>
                     ))}
                   </select>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-600 uppercase mb-2">Title</label>
+                  <label className="block text-xs font-semibold text-slate-600 uppercase mb-2">Service Title</label>
                   <input 
                     type="text" required
-                    value={serviceForm.title}
-                    onChange={(e) => setServiceForm({ ...serviceForm, title: e.target.value })}
-                    placeholder="e.g. Guidance & Counseling"
+                    value={pageServiceForm.title}
+                    onChange={(e) => setPageServiceForm({ ...pageServiceForm, title: e.target.value })}
                     className="w-full border border-slate-300 rounded px-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500"
                   />
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-600 uppercase mb-2">Classification Type</label>
-                    <select 
-                      value={serviceForm.service_type}
-                      onChange={(e) => setServiceForm({ ...serviceForm, service_type: e.target.value })}
-                      className="w-full border border-slate-300 bg-white rounded px-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                    >
-                      <option value="service">Service (Guidance, Discipline, etc.)</option>
-                      <option value="program">Program (Invictus, CORE, etc.)</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-600 uppercase mb-2">Font Awesome Icon Class</label>
-                    <select 
-                      value={serviceForm.icon_class}
-                      onChange={(e) => setServiceForm({ ...serviceForm, icon_class: e.target.value })}
-                      className="w-full border border-slate-300 bg-white rounded px-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                    >
-                      <option value="fa-solid fa-brain">🧠 fa-brain (Mental Wellness)</option>
-                      <option value="fa-solid fa-scale-balanced">⚖️ fa-scale-balanced (Discipline/Justice)</option>
-                      <option value="fa-solid fa-graduation-cap">🎓 fa-graduation-cap (Scholarships)</option>
-                      <option value="fa-solid fa-certificate">📜 fa-certificate (Character Certification)</option>
-                      <option value="fa-solid fa-trophy">🏆 fa-trophy (Awards/Excellence)</option>
-                      <option value="fa-solid fa-users-gear">⚙️ fa-users-gear (Organizations Coordination)</option>
-                      <option value="fa-solid fa-school">🏫 fa-school (Campus/Classroom)</option>
-                      <option value="fa-solid fa-award">🎗️ fa-award (Merits)</option>
-                    </select>
-                  </div>
                 </div>
 
                 <div>
                   <label className="block text-xs font-semibold text-slate-600 uppercase mb-2">Description</label>
                   <textarea 
                     required rows="4"
-                    value={serviceForm.description}
-                    onChange={(e) => setServiceForm({ ...serviceForm, description: e.target.value })}
-                    placeholder="Describe the operational core of this service or program..."
+                    value={pageServiceForm.description}
+                    onChange={(e) => setPageServiceForm({ ...pageServiceForm, description: e.target.value })}
                     className="w-full border border-slate-300 rounded px-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500"
                   ></textarea>
                 </div>
 
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-600 uppercase mb-2">Feature One Title</label>
+                    <input 
+                      type="text" required
+                      value={pageServiceForm.feature_one_title}
+                      onChange={(e) => setPageServiceForm({ ...pageServiceForm, feature_one_title: e.target.value })}
+                      className="w-full border border-slate-300 rounded px-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-600 uppercase mb-2">Feature One Description / List (Use newlines for lists)</label>
+                    <textarea 
+                      required rows="3"
+                      value={pageServiceForm.feature_one_desc}
+                      onChange={(e) => setPageServiceForm({ ...pageServiceForm, feature_one_desc: e.target.value })}
+                      className="w-full border border-slate-300 rounded px-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500 bg-white"
+                    ></textarea>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-600 uppercase mb-2">Feature Two Title</label>
+                    <input 
+                      type="text" required
+                      value={pageServiceForm.feature_two_title}
+                      onChange={(e) => setPageServiceForm({ ...pageServiceForm, feature_two_title: e.target.value })}
+                      className="w-full border border-slate-300 rounded px-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-600 uppercase mb-2">Feature Two Description / List (Use newlines for lists)</label>
+                    <textarea 
+                      required rows="3"
+                      value={pageServiceForm.feature_two_desc}
+                      onChange={(e) => setPageServiceForm({ ...pageServiceForm, feature_two_desc: e.target.value })}
+                      className="w-full border border-slate-300 rounded px-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500 bg-white"
+                    ></textarea>
+                  </div>
+                </div>
+
+                {selectedPageServiceId === '2' && ( // Career-specific fields
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 border border-slate-100 p-4 rounded-lg bg-slate-50">
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-600 uppercase mb-2">Feature Three Title</label>
+                      <input 
+                        type="text"
+                        value={pageServiceForm.feature_three_title}
+                        onChange={(e) => setPageServiceForm({ ...pageServiceForm, feature_three_title: e.target.value })}
+                        className="w-full border border-slate-300 rounded px-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500 bg-white"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-600 uppercase mb-2">Feature Three Description</label>
+                      <textarea 
+                        rows="2"
+                        value={pageServiceForm.feature_three_desc}
+                        onChange={(e) => setPageServiceForm({ ...pageServiceForm, feature_three_desc: e.target.value })}
+                        className="w-full border border-slate-300 rounded px-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500 bg-white"
+                      ></textarea>
+                    </div>
+                  </div>
+                )}
+
+                {selectedPageServiceId === '1' && ( // Guidance-specific fields
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-600 uppercase mb-2">Booking Instructions (Separate each step with a new line)</label>
+                    <textarea 
+                      rows="4"
+                      value={pageServiceForm.instructions}
+                      onChange={(e) => setPageServiceForm({ ...pageServiceForm, instructions: e.target.value })}
+                      placeholder="e.g. 1. Click the booking button...&#10;2. Fill in details...&#10;3. Confirm..."
+                      className="w-full border border-slate-300 rounded px-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500 bg-white"
+                    ></textarea>
+                  </div>
+                )}
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 border-t border-slate-200 pt-6">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-600 uppercase mb-2">Sidebar Card Title</label>
+                    <input 
+                      type="text" required
+                      value={pageServiceForm.sidebar_title}
+                      onChange={(e) => setPageServiceForm({ ...pageServiceForm, sidebar_title: e.target.value })}
+                      className="w-full border border-slate-300 rounded px-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-600 uppercase mb-2">Sidebar Card Text Description</label>
+                    <textarea 
+                      required rows="2"
+                      value={pageServiceForm.sidebar_text}
+                      onChange={(e) => setPageServiceForm({ ...pageServiceForm, sidebar_text: e.target.value })}
+                      className="w-full border border-slate-300 rounded px-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500 bg-white"
+                    ></textarea>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-600 uppercase mb-2">Primary Button Text Label</label>
+                    <input 
+                      type="text" required
+                      value={pageServiceForm.btn_primary_text}
+                      onChange={(e) => setPageServiceForm({ ...pageServiceForm, btn_primary_text: e.target.value })}
+                      className="w-full border border-slate-300 rounded px-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-600 uppercase mb-2">Secondary Button Text Label</label>
+                    <input 
+                      type="text" required
+                      value={pageServiceForm.btn_secondary_text}
+                      onChange={(e) => setPageServiceForm({ ...pageServiceForm, btn_secondary_text: e.target.value })}
+                      className="w-full border border-slate-300 rounded px-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                    />
+                  </div>
+                </div>
+
                 <button 
                   type="submit"
-                  className="w-full bg-emerald-800 hover:bg-emerald-900 text-white font-bold py-3 rounded transition shadow-sm cursor-pointer"
+                  className="w-full bg-emerald-800 hover:bg-emerald-950 text-white font-bold py-3 rounded transition shadow-sm cursor-pointer"
                 >
-                  {selectedServiceId === 'new' ? 'Register and Publish Service/Program' : 'Save Services & Programs Revisions'}
+                  Save Services Page Revisions
                 </button>
               </form>
             )}
