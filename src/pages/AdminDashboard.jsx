@@ -1,22 +1,19 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { API_BASE_URL } from '../config';
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState('appointments');
   const [appointments, setAppointments] = useState([]);
   const [messages, setMessages] = useState([]);
-  const [organizations, setOrganizations] = useState([]); // New State
+  const [organizations, setOrganizations] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
-  // Selected Org for posting bulletins
   const [selectedOrgId, setSelectedOrgId] = useState('');
   const [bulletinText, setBulletinText] = useState('');
   const [bulletinSuccess, setBulletinSuccess] = useState(false);
 
-  // New Club Form State
   const [clubForm, setClubForm] = useState({
     name: '',
     acronym: '',
@@ -26,12 +23,13 @@ export default function AdminDashboard() {
   });
   const [clubSuccess, setClubSuccess] = useState(false);
 
-  // New Announcement Form State
+  // Updated Announcement Form State (Added image_url)
   const [announcementForm, setAnnouncementForm] = useState({
     title: '',
     category: 'Scholarships',
     summary: '',
-    content: ''
+    content: '',
+    image_url: '' 
   });
   const [announcementSuccess, setAnnouncementSuccess] = useState(false);
 
@@ -55,13 +53,13 @@ export default function AdminDashboard() {
 
     try {
       const [apptRes, msgRes, orgRes] = await Promise.all([
-        fetch(`${API_BASE_URL}/api/appointments`, {
+        fetch('http://localhost:5000/api/appointments', {
           headers: { 'Authorization': `Bearer ${token}` }
         }),
-        fetch(`${API_BASE_URL}/api/contact`, {
+        fetch('http://localhost:5000/api/contact', {
           headers: { 'Authorization': `Bearer ${token}` }
         }),
-        fetch(`${API_BASE_URL}/api/organizations`) // Publicly readable
+        fetch('http://localhost:5000/api/organizations')
       ]);
 
       if (apptRes.status === 401 || apptRes.status === 403 || msgRes.status === 401 || msgRes.status === 403) {
@@ -82,7 +80,7 @@ export default function AdminDashboard() {
       setOrganizations(orgData);
       
       if (orgData.length > 0 && !selectedOrgId) {
-        setSelectedOrgId(orgData[0].id); // Default dropdown selection
+        setSelectedOrgId(orgData[0].id);
       }
     } catch (err) {
       console.error(err);
@@ -99,7 +97,7 @@ export default function AdminDashboard() {
   const handleStatusChange = async (id, newStatus) => {
     const token = localStorage.getItem('token');
     try {
-      const response = await fetch(`${API_BASE_URL}/api/appointments/${id}`, {
+      const response = await fetch(`http://localhost:5000/api/appointments/${id}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -131,7 +129,7 @@ export default function AdminDashboard() {
     const token = localStorage.getItem('token');
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/announcements`, {
+      const response = await fetch('http://localhost:5000/api/announcements', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -147,7 +145,7 @@ export default function AdminDashboard() {
 
       if (response.ok) {
         setAnnouncementSuccess(true);
-        setAnnouncementForm({ title: '', category: 'Scholarships', summary: '', content: '' });
+        setAnnouncementForm({ title: '', category: 'Scholarships', summary: '', content: '', image_url: '' });
       } else {
         const data = await response.json();
         setError(data.error || 'Failed to post announcement.');
@@ -158,7 +156,6 @@ export default function AdminDashboard() {
     }
   };
 
-  // Submit New Organization (CORE Coordinator)
   const handleClubSubmit = async (e) => {
     e.preventDefault();
     setError(null);
@@ -166,7 +163,7 @@ export default function AdminDashboard() {
     const token = localStorage.getItem('token');
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/organizations`, {
+      const response = await fetch('http://localhost:5000/api/organizations', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -194,7 +191,6 @@ export default function AdminDashboard() {
     }
   };
 
-  // Post Bulletin/Latest Update to Club (CORE Coordinator)
   const handleBulletinSubmit = async (e) => {
     e.preventDefault();
     setError(null);
@@ -202,7 +198,7 @@ export default function AdminDashboard() {
     const token = localStorage.getItem('token');
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/organizations/${selectedOrgId}`, {
+      const response = await fetch(`http://localhost:5000/api/organizations/${selectedOrgId}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -295,7 +291,6 @@ export default function AdminDashboard() {
           ) : (
             
             <>
-              {/* --- TAB 1: APPOINTMENTS --- */}
               {activeTab === 'appointments' && (
                 <div className="overflow-x-auto">
                   {appointments.length > 0 ? (
@@ -364,7 +359,6 @@ export default function AdminDashboard() {
                 </div>
               )}
 
-              {/* --- TAB 2: CONTACT MESSAGES --- */}
               {activeTab === 'messages' && (
                 <div className="space-y-4">
                   {messages.length > 0 ? (
@@ -388,11 +382,8 @@ export default function AdminDashboard() {
                 </div>
               )}
 
-              {/* --- TAB 3: ORGANIZATIONS MANAGER (CORE Coordinator Panel) --- */}
               {activeTab === 'org-manager' && (
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-                  
-                  {/* Left: Register New accredited organization */}
                   <form onSubmit={handleClubSubmit} className="space-y-4 bg-slate-50 p-6 rounded-lg border border-slate-200">
                     <h3 className="font-bold text-slate-800 text-base border-b pb-2">Register New Accredited Org</h3>
                     
@@ -457,7 +448,6 @@ export default function AdminDashboard() {
                     </button>
                   </form>
 
-                  {/* Right: Publish updates/bulletins for organizations */}
                   <form onSubmit={handleBulletinSubmit} className="space-y-4 bg-slate-50 p-6 rounded-lg border border-slate-200">
                     <h3 className="font-bold text-slate-800 text-base border-b pb-2">Update Public Org Bulletin</h3>
 
@@ -529,6 +519,17 @@ export default function AdminDashboard() {
                         <option>Guidance</option>
                         <option>General</option>
                       </select>
+                    </div>
+                    {/* Added Cover Image URL Input Field */}
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-600 uppercase mb-2">Cover Image URL</label>
+                      <input 
+                        type="text" 
+                        value={announcementForm.image_url}
+                        onChange={(e) => setAnnouncementForm({...announcementForm, image_url: e.target.value})}
+                        placeholder="e.g. https://images.unsplash.com/... (or leave blank)"
+                        className="w-full border border-slate-300 rounded px-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                      />
                     </div>
                   </div>
 
