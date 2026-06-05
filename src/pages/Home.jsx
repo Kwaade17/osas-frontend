@@ -67,24 +67,20 @@ export default function Home() {
             <p className="text-slate-500 text-sm">Loading current announcements...</p>
           </div>
         ) : error ? (
-          <div className="bg-rose-50 border border-rose-200 text-rose-850 p-6 rounded-lg text-sm text-center">
+          <div className="bg-rose-50 border border-rose-200 text-rose-800 p-6 rounded-lg text-sm text-center">
             ⚠️ {error}
           </div>
         ) : announcements.length > 0 ? (
-          /* ================= GRID LIST OF DYNAMIC CARDS ================= */
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {announcements.map((item) => (
               <article key={item.id} className="bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden hover:shadow-md hover:border-emerald-200 transition flex flex-col justify-between">
-                
                 <div>
-                  {/* Card Cover Image Layer */}
                   <div className="h-48 w-full overflow-hidden bg-slate-100 relative">
                     <img 
                       src={item.image_url || 'https://images.unsplash.com/photo-1541339907198-e08756dedf3f?q=80&w=600&auto=format&fit=crop'} 
                       alt={item.title} 
                       className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
                       onError={(e) => {
-                        // Fallback image if the provided custom URL fails to load
                         e.target.src = 'https://images.unsplash.com/photo-1541339907198-e08756dedf3f?q=80&w=600&auto=format&fit=crop';
                       }}
                     />
@@ -100,7 +96,6 @@ export default function Home() {
                   </div>
                 </div>
 
-                {/* Styled Card Action Button */}
                 <div className="p-6 border-t border-slate-100 bg-slate-50">
                   <button 
                     onClick={() => alert(`Details for: ${item.title}`)}
@@ -109,12 +104,10 @@ export default function Home() {
                     Read Announcement Details
                   </button>
                 </div>
-
               </article>
             ))}
           </div>
         ) : (
-          /* ================= THEMED FALLBACK DEFAULT CARD ================= */
           <div className="max-w-xl mx-auto bg-white border border-emerald-100 rounded-lg shadow-sm p-8 text-center space-y-4 hover:border-emerald-200 transition">
             <div className="w-14 h-14 bg-emerald-50 text-emerald-800 rounded-full flex items-center justify-center text-2xl mx-auto">
               📢
@@ -132,40 +125,118 @@ export default function Home() {
         )}
       </section>
 
-      {/* Quick Navigation Core Services */}
+      {/* 
+        ================= SERVICES AND PROGRAMS SECTION ================= 
+        Divided into a 2/3 column layout (Services) and 1/3 column layout (Programs)
+        using elegant styling and Font Awesome integration.
+      */}
       <section className="bg-white py-16 border-t border-b border-slate-200">
-        <div className="max-w-7xl mx-auto px-4">
-          <h2 className="text-2xl font-bold text-slate-800 text-center mb-12">
-            Functional Divisions
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          
+          <h2 className="text-3xl font-extrabold text-slate-900 text-center mb-16">
+            Services and Programs
           </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
             
-            {/* Guidance */}
-            <div className="p-6 bg-slate-50 rounded-lg border border-slate-200 hover:border-emerald-400 transition">
-              <div className="h-10 w-10 bg-emerald-50 text-emerald-800 rounded-lg flex items-center justify-center mb-4 text-xl">🧠</div>
-              <h3 className="font-bold text-base text-slate-800 mb-2">Guidance & Counseling</h3>
-              <p className="text-xs text-slate-600 leading-relaxed">Confidential testing, counseling sessions, and student guidance support.</p>
+            {/* LEFT COLUMN: SERVICES (Takes up 2/3 of space on desktop) */}
+            <div className="lg:col-span-2 space-y-6">
+              <h3 className="text-xs font-bold uppercase tracking-widest text-emerald-800 mb-4 border-b border-emerald-100 pb-2">
+                Our Services
+              </h3>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                
+                {/* 1. Guidance */}
+                <div className="p-6 bg-slate-50/50 rounded-lg border border-slate-200 hover:border-emerald-400 hover:shadow-sm transition flex flex-col justify-between">
+                  <div>
+                    <div className="h-10 w-10 bg-emerald-50 text-emerald-800 rounded-lg flex items-center justify-center mb-4 text-base shadow-sm border border-emerald-100/40">
+                      <i className="fa-solid fa-brain"></i>
+                    </div>
+                    <h4 className="font-bold text-base text-slate-800 mb-2">Guidance & Counseling</h4>
+                    <p className="text-xs text-slate-600 leading-relaxed">
+                      Confidential testing, counseling sessions, and student guidance support for mental well-being.
+                    </p>
+                  </div>
+                </div>
+
+                {/* 2. Discipline */}
+                <div className="p-6 bg-slate-50/50 rounded-lg border border-slate-200 hover:border-emerald-400 hover:shadow-sm transition flex flex-col justify-between">
+                  <div>
+                    <div className="h-10 w-10 bg-emerald-50 text-emerald-800 rounded-lg flex items-center justify-center mb-4 text-base shadow-sm border border-emerald-100/40">
+                      <i className="fa-solid fa-scale-balanced"></i>
+                    </div>
+                    <h4 className="font-bold text-base text-slate-800 mb-2">Student Discipline</h4>
+                    <p className="text-xs text-slate-600 leading-relaxed">
+                      Advocating student rights while ensuring discipline procedures and handbook compliance.
+                    </p>
+                  </div>
+                </div>
+
+                {/* 3. Scholarship */}
+                <div className="p-6 bg-slate-50/50 rounded-lg border border-slate-200 hover:border-emerald-400 hover:shadow-sm transition flex flex-col justify-between">
+                  <div>
+                    <div className="h-10 w-10 bg-emerald-50 text-emerald-800 rounded-lg flex items-center justify-center mb-4 text-base shadow-sm border border-emerald-100/40">
+                      <i className="fa-solid fa-graduation-cap"></i>
+                    </div>
+                    <h4 className="font-bold text-base text-slate-800 mb-2">Scholarship</h4>
+                    <p className="text-xs text-slate-600 leading-relaxed">
+                      Evaluating tuition assistance, local government grants, and financial support allocations.
+                    </p>
+                  </div>
+                </div>
+
+                {/* 4. Good Moral */}
+                <div className="p-6 bg-slate-50/50 rounded-lg border border-slate-200 hover:border-emerald-400 hover:shadow-sm transition flex flex-col justify-between">
+                  <div>
+                    <div className="h-10 w-10 bg-emerald-50 text-emerald-800 rounded-lg flex items-center justify-center mb-4 text-base shadow-sm border border-emerald-100/40">
+                      <i className="fa-solid fa-certificate"></i>
+                    </div>
+                    <h4 className="font-bold text-base text-slate-800 mb-2">Good Moral</h4>
+                    <p className="text-xs text-slate-600 leading-relaxed">
+                      Processing clearance checklists and issuing official Certificates of Good Moral Character.
+                    </p>
+                  </div>
+                </div>
+
+              </div>
             </div>
 
-            {/* Student Discipline */}
-            <div className="p-6 bg-slate-50 rounded-lg border border-slate-200 hover:border-emerald-400 transition">
-              <div className="h-10 w-10 bg-emerald-50 text-emerald-800 rounded-lg flex items-center justify-center mb-4 text-xl">⚖️</div>
-              <h3 className="font-bold text-base text-slate-800 mb-2">Student Discipline</h3>
-              <p className="text-xs text-slate-600 leading-relaxed">Advocating student rights while ensuring discipline procedures and handbook guidelines.</p>
-            </div>
+            {/* RIGHT COLUMN: PROGRAMS (Takes up 1/3 of space on desktop) */}
+            <div className="lg:col-span-1 space-y-6">
+              <h3 className="text-xs font-bold uppercase tracking-widest text-emerald-800 mb-4 border-b border-emerald-100 pb-2">
+                Flagship Programs
+              </h3>
+              
+              <div className="grid grid-cols-1 gap-6">
+                
+                {/* 1. Invictus Excellence Awards */}
+                <div className="p-6 bg-slate-50/50 rounded-lg border border-slate-200 hover:border-emerald-400 hover:shadow-sm transition flex flex-col justify-between">
+                  <div>
+                    <div className="h-10 w-10 bg-emerald-50 text-emerald-800 rounded-lg flex items-center justify-center mb-4 text-base shadow-sm border border-emerald-100/40">
+                      <i className="fa-solid fa-trophy"></i>
+                    </div>
+                    <h4 className="font-bold text-base text-slate-800 mb-2">Invictus Excellence Awards</h4>
+                    <p className="text-xs text-slate-600 leading-relaxed">
+                      Our premier annual program recognizing outstanding student achievements and academic excellence.
+                    </p>
+                  </div>
+                </div>
 
-            {/* Student Orgs */}
-            <div className="p-6 bg-slate-50 rounded-lg border border-slate-200 hover:border-emerald-400 transition">
-              <div className="h-10 w-10 bg-emerald-50 text-emerald-800 rounded-lg flex items-center justify-center mb-4 text-xl">👥</div>
-              <h3 className="font-bold text-base text-slate-800 mb-2">Student Government</h3>
-              <p className="text-xs text-slate-600 leading-relaxed">Connecting student leaders and promoting transparent administrative activities.</p>
-            </div>
+                {/* 2. CORE */}
+                <div className="p-6 bg-slate-50/50 rounded-lg border border-slate-200 hover:border-emerald-400 hover:shadow-sm transition flex flex-col justify-between">
+                  <div>
+                    <div className="h-10 w-10 bg-emerald-50 text-emerald-800 rounded-lg flex items-center justify-center mb-4 text-base shadow-sm border border-emerald-100/40">
+                      <i className="fa-solid fa-users-gear"></i>
+                    </div>
+                    <h4 className="font-bold text-base text-slate-800 mb-2">CORE</h4>
+                    <p className="text-xs text-slate-600 leading-relaxed">
+                      Coordinating and supervising all accredited student organizations (Major, Program-Limited, and College Orgs).
+                    </p>
+                  </div>
+                </div>
 
-            {/* Student Pubs */}
-            <div className="p-6 bg-slate-50 rounded-lg border border-slate-200 hover:border-emerald-400 transition">
-              <div className="h-10 w-10 bg-emerald-50 text-emerald-800 rounded-lg flex items-center justify-center mb-4 text-xl">✍️</div>
-              <h3 className="font-bold text-base text-slate-800 mb-2">Publications</h3>
-              <p className="text-xs text-slate-600 leading-relaxed">The home of freedom of expression and student journalism outlets.</p>
+              </div>
             </div>
 
           </div>
