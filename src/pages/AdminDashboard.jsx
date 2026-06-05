@@ -31,7 +31,7 @@ export default function AdminDashboard() {
   const [areaForm, setAreaForm] = useState({ title: '', description: '', key_operations: '' });
   const [staffForm, setStaffForm] = useState({ name: '', role: '', initials: '', color: 'bg-emerald-800' });
 
-  // Developer Tab 3: Services & Programs State (New)
+  // Developer Tab 3: Services & Programs State
   const [allServices, setAllServices] = useState([]);
   const [selectedServiceId, setSelectedServiceId] = useState('');
   const [serviceForm, setServiceForm] = useState({
@@ -82,7 +82,6 @@ export default function AdminDashboard() {
 
     try {
       if (userRole === 'developer') {
-        // Fetch About Data and Services Data parallelly for Developer view
         const [aboutRes, srvRes] = await Promise.all([
           fetch(`${API_BASE_URL}/api/about`),
           fetch(`${API_BASE_URL}/api/site-services`)
@@ -96,7 +95,7 @@ export default function AdminDashboard() {
         setAboutData(abtData);
         setAllServices(srvData);
 
-        // Prepopulate functional area selectors
+        // Prepopulate functional area selectors (Checks if exist or default to 'new') [1]
         if (abtData.functionalAreas.length > 0 && !selectedAreaId) {
           const firstArea = abtData.functionalAreas[0];
           setSelectedAreaId(firstArea.id);
@@ -109,7 +108,7 @@ export default function AdminDashboard() {
           setSelectedAreaId('new');
         }
 
-        // Prepopulate staff directory selectors
+        // Prepopulate staff selectors (Checks if exist or default to 'new') [1]
         if (abtData.staff.length > 0 && !selectedStaffId) {
           const firstStaff = abtData.staff[0];
           setSelectedStaffId(firstStaff.id);
@@ -123,7 +122,7 @@ export default function AdminDashboard() {
           setSelectedStaffId('new');
         }
 
-        // Prepopulate services and programs selectors
+        // Prepopulate service selectors
         if (srvData.length > 0 && !selectedServiceId) {
           const firstSrv = srvData[0];
           setSelectedServiceId(firstSrv.id);
@@ -178,7 +177,7 @@ export default function AdminDashboard() {
   }, [handleLogout, userRole, selectedAreaId, selectedStaffId, selectedServiceId, selectedOrgId]);
 
   // ==========================================
-  // 3. ACTION HANDLERS
+  // 3. ACTION HANDLERS (Placed BEFORE conditional returns) [1]
   // ==========================================
 
   const handleAreaSelectChange = (id) => {
@@ -214,7 +213,6 @@ export default function AdminDashboard() {
     }
   };
 
-  // Selector drop trigger for Services & Programs [1]
   const handleServiceSelectChange = (id) => {
     setSelectedServiceId(id);
     if (id === 'new') {
@@ -248,6 +246,7 @@ export default function AdminDashboard() {
     }
   };
 
+  // Re-added handleStatusChange handler before returns (Fixes undefined error) [1]
   const handleStatusChange = async (id, newStatus) => {
     const token = localStorage.getItem('token');
     try {
@@ -310,6 +309,7 @@ export default function AdminDashboard() {
     }
   };
 
+  // Create (POST) or Update (PUT) Functional Area [1]
   const handleAreaSubmit = async (e) => {
     e.preventDefault();
     setDevSuccessMessage(null);
@@ -359,6 +359,7 @@ export default function AdminDashboard() {
     }
   };
 
+  // Create (POST) or Update (PUT) Staff Member [1]
   const handleStaffSubmit = async (e) => {
     e.preventDefault();
     setDevSuccessMessage(null);
@@ -399,7 +400,7 @@ export default function AdminDashboard() {
     }
   };
 
-  // Submit Services & Programs (POST (Add New) or PUT (Edit)) [1]
+  // Create (POST) or Update (PUT) Service / Program [1]
   const handleServiceSubmit = async (e) => {
     e.preventDefault();
     setDevSuccessMessage(null);
@@ -428,7 +429,7 @@ export default function AdminDashboard() {
 
       if (response.ok) {
         setDevSuccessMessage(isNew ? 'New service/program registered successfully!' : 'Service/program updated successfully!');
-        setSelectedServiceId(''); // Reset selector trigger to fetch fresh
+        setSelectedServiceId(''); 
         fetchAdminData(true);
       } else {
         const data = await response.json();
@@ -547,7 +548,7 @@ export default function AdminDashboard() {
   };
 
   // ==========================================
-  // 4. SECURE DECOUPLED EFFECT
+  // 4. SECURE EFFECT (Wrapped in Timeout)
   // ==========================================
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -557,7 +558,7 @@ export default function AdminDashboard() {
   }, [fetchAdminData]);
 
   // ==========================================
-  // 5. DEVELOPER DASHBOARD RENDER
+  // 5. DEVELOPER DASHBOARD RENDER [1]
   // ==========================================
   if (userRole === 'developer') {
     return (
@@ -622,7 +623,7 @@ export default function AdminDashboard() {
               </div>
             )}
 
-            {/* --- TAB 2: SERVICES (Fully Functional Services and Flagship Programs Editor) --- */}
+            {/* --- TAB 2: SERVICES --- */}
             {devTab === 'services' && (
               <form onSubmit={handleServiceSubmit} className="max-w-2xl mx-auto space-y-6">
                 <h3 className="text-lg font-bold text-slate-800 border-b pb-2">Configure Services & Programs</h3>
