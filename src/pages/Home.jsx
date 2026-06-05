@@ -6,7 +6,6 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Fetch the announcements from the backend on mount
   useEffect(() => {
     const fetchAnnouncements = async () => {
       try {
@@ -27,7 +26,6 @@ export default function Home() {
     fetchAnnouncements();
   }, []);
 
-  // Helper to format the ISO timestamp from PostgreSQL into a readable string
   const formatDate = (dateString) => {
     const options = { year: 'numeric', month: 'long', day: 'numeric' };
     return new Date(dateString).toLocaleDateString(undefined, options);
@@ -36,44 +34,58 @@ export default function Home() {
   return (
     <div className="bg-slate-50 min-h-screen">
       
-      {/* Hero Section */}
-      <header className="bg-gradient-to-br from-emerald-900 via-emerald-950 to-slate-950 text-white py-20 px-4 text-center">
-        <div className="max-w-4xl mx-auto">
-          <h1 className="text-3xl md:text-5xl font-extrabold mb-4 leading-tight">
+      {/* 
+        ================= HERO SECTION WITH BACKGROUND IMAGE ================= 
+        Uses relative positioning, an absolute image back-layer, a dark gradient overlay, 
+        and high-contrast text on top.
+      */}
+      <header className="relative py-24 px-4 text-center overflow-hidden min-h-[450px] flex items-center justify-center">
+        
+        {/* Background Image Layer (points to public/school-bg.jpg) */}
+        <div 
+          className="absolute inset-0 bg-cover bg-center z-0 transition-all duration-500"
+          style={{ 
+            backgroundImage: `url('/school-bg.jpg')`,
+            // Optional temporary fallback image if school-bg.jpg is missing
+            backgroundFallbackImage: 'linear-gradient(to bottom, #064e3b, #022c22)'
+          }}
+        />
+        
+        {/* Dark Emerald Tint Gradient Overlay (Ensures text remains completely legible) */}
+        <div className="absolute inset-0 bg-gradient-to-br from-emerald-950/95 via-emerald-900/90 to-slate-950/95 z-10" />
+        
+        {/* Centered Content (elevated with z-20 so it sits on top) */}
+        <div className="relative z-20 max-w-4xl mx-auto">
+          <h1 className="text-3xl md:text-5xl font-extrabold mb-4 leading-tight text-white">
             Nurturing Student Welfare & Growth Outside the Classroom
           </h1>
-          <p className="text-base md:text-lg text-emerald-100 mb-8 max-w-2xl mx-auto">
+          <p className="text-sm md:text-base text-emerald-100/90 mb-8 max-w-2xl mx-auto leading-relaxed">
             Supporting your journey at La Carlota City College through personal development, counseling, activities, and campus life advocacy.
           </p>
-          <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <button className="bg-white hover:bg-slate-100 text-emerald-950 font-bold px-6 py-3 rounded-md shadow-md transition text-sm">
-              Download Student Handbook
-            </button>
-            <button className="border border-emerald-200/40 hover:bg-white/10 font-semibold px-6 py-3 rounded-md transition text-sm text-emerald-100">
+          <div className="flex justify-center">
+            {/* Centered Primary Call-To-Action Button */}
+            <button className="bg-white hover:bg-slate-100 text-emerald-950 font-bold px-8 py-3 rounded-md shadow-md transition text-sm cursor-pointer">
               Explore Our Services
             </button>
           </div>
         </div>
       </header>
 
-      {/* Dynamic Announcements Section */}
+      {/* Announcements Section */}
       <section className="max-w-7xl mx-auto px-4 py-16">
         <h2 className="text-2xl font-bold text-slate-800 mb-8 border-b border-slate-200 pb-4">
           Latest Announcements
         </h2>
 
         {isLoading ? (
-          /* Loading State */
           <div className="text-center py-12">
             <p className="text-slate-500 text-sm">Loading current announcements...</p>
           </div>
         ) : error ? (
-          /* Error State */
           <div className="bg-rose-50 border border-rose-200 text-rose-800 p-6 rounded-lg text-sm text-center">
             ⚠️ {error}
           </div>
         ) : announcements.length > 0 ? (
-          /* Standard Render */
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {announcements.map((item) => (
               <article key={item.id} className="bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden hover:shadow-md hover:border-emerald-200 transition flex flex-col justify-between">
@@ -94,7 +106,6 @@ export default function Home() {
             ))}
           </div>
         ) : (
-          /* Empty Database State */
           <div className="text-center py-12 bg-white rounded-lg border border-slate-200">
             <p className="text-slate-500 text-sm">No announcements posted at this time.</p>
           </div>
