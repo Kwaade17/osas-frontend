@@ -3,27 +3,37 @@ import { API_BASE_URL } from '../config';
 
 export default function Home() {
   const [announcements, setAnnouncements] = useState([]);
-  const [services, setServices] = useState([]); // New State
+  const [services, setServices] = useState([]);
+  const [homeData, setHomeData] = useState({
+    hero_title: 'Nurturing Student Welfare & Growth Outside the Classroom',
+    hero_subtitle: 'Supporting your journey at La Carlota City College through personal development, counseling, activities, and campus life advocacy.',
+    hero_bg_image: '/school-bg.jpg' // Default fallback [1]
+  });
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   
   useEffect(() => {
     const fetchHomeData = async () => {
       try {
-        const [annRes, srvRes] = await Promise.all([
+        const [annRes, srvRes, homeRes] = await Promise.all([
           fetch(`${API_BASE_URL}/api/announcements`),
-          fetch(`${API_BASE_URL}/api/site-services`) // Dynamic service endpoint
+          fetch(`${API_BASE_URL}/api/site-services`),
+          fetch(`${API_BASE_URL}/api/home`) // Fetch dynamic hero contents [1]
         ]);
         
-        if (!annRes.ok || !srvRes.ok) {
+        if (!annRes.ok || !srvRes.ok || !homeRes.ok) {
           throw new Error('Failed to retrieve homepage data.');
         }
         
         const annData = await annRes.json();
         const srvData = await srvRes.json();
+        const hData = await homeRes.json();
         
         setAnnouncements(annData);
         setServices(srvData);
+        if (hData.hero_title) {
+          setHomeData(hData); // Populate dynamic homepage text/image [1]
+        }
       } catch (err) {
         console.error('Error fetching homepage data:', err);
         setError('Unable to load current campus data at this time.');
@@ -40,26 +50,31 @@ export default function Home() {
     return new Date(dateString).toLocaleDateString(undefined, options);
   };
   
-  // Dynamically split services and programs on the client side [1]
   const renderedServices = services.filter(item => item.service_type === 'service');
   const renderedPrograms = services.filter(item => item.service_type === 'program');
   
   return (
     <div className="bg-slate-50 min-h-screen">
       
-      {/* Hero Section */}
+      {/* 
+        ================= HERO SECTION (DYNAMICALLY RESOLVED) ================= 
+        Loads background, titles, and subtitles directly from your cloud database [1]
+      */}
       <header className="relative py-24 px-4 text-center overflow-hidden min-h-[450px] flex items-center justify-center">
+        
+        {/* Dynamic Background Image (Loads Base64 or standard path seamlessly) */}
         <div 
           className="absolute inset-0 bg-cover bg-center z-0 transition-all duration-500"
-          style={{ backgroundImage: `url('/school-bg.jpg')` }}
+          style={{ backgroundImage: `url('${homeData.hero_bg_image}')` }}
         />
         <div className="absolute inset-0 bg-gradient-to-br from-emerald-950/95 via-emerald-900/90 to-slate-950/95 z-10" />
+        
         <div className="relative z-20 max-w-4xl mx-auto">
           <h1 className="text-3xl md:text-5xl font-extrabold mb-4 leading-tight text-white">
-            Nurturing Student Welfare & Growth Outside the Classroom
+            {homeData.hero_title}
           </h1>
           <p className="text-sm md:text-base text-emerald-100/90 mb-8 max-w-2xl mx-auto leading-relaxed">
-            Supporting your journey at La Carlota City College through personal development, counseling, activities, and campus life advocacy.
+            {homeData.hero_subtitle}
           </p>
           <div className="flex justify-center">
             <button className="bg-white hover:bg-slate-100 text-emerald-950 font-bold px-8 py-3 rounded-md shadow-md transition text-sm cursor-pointer">
@@ -138,7 +153,7 @@ export default function Home() {
         )}
       </section>
 
-      {/* Services and Flagship Programs Grid */}
+      {/* Services and Programs Grid */}
       <section className="bg-white py-16 border-t border-b border-slate-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           

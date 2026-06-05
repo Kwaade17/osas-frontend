@@ -31,7 +31,14 @@ export default function AdminDashboard() {
   const [areaForm, setAreaForm] = useState({ title: '', description: '', key_operations: '' });
   const [staffForm, setStaffForm] = useState({ name: '', role: '', initials: '', color: 'bg-emerald-800' });
 
-  // Developer Tab 3: Services & Programs State
+  // Developer Tab: Home Editor State (New)
+  const [homeForm, setHomeForm] = useState({
+    hero_title: '',
+    hero_subtitle: '',
+    hero_bg_image: ''
+  });
+
+  // Developer Tab: Services & Programs State
   const [allServices, setAllServices] = useState([]);
   const [selectedServiceId, setSelectedServiceId] = useState('');
   const [serviceForm, setServiceForm] = useState({
@@ -82,20 +89,32 @@ export default function AdminDashboard() {
 
     try {
       if (userRole === 'developer') {
-        const [aboutRes, srvRes] = await Promise.all([
+        // Fetch About, Services, and Home Landing Details in parallel [1]
+        const [aboutRes, srvRes, homeRes] = await Promise.all([
           fetch(`${API_BASE_URL}/api/about`),
-          fetch(`${API_BASE_URL}/api/site-services`)
+          fetch(`${API_BASE_URL}/api/site-services`),
+          fetch(`${API_BASE_URL}/api/home`)
         ]);
 
-        if (!aboutRes.ok || !srvRes.ok) throw new Error('Failed to load portal databases.');
+        if (!aboutRes.ok || !srvRes.ok || !homeRes.ok) throw new Error('Failed to load portal databases.');
 
         const abtData = await aboutRes.json();
         const srvData = await srvRes.json();
+        const hData = await homeRes.json();
 
         setAboutData(abtData);
         setAllServices(srvData);
+        
+        // Prepopulate Home Editor Form [1]
+        if (hData.hero_title) {
+          setHomeForm({
+            hero_title: hData.hero_title || '',
+            hero_subtitle: hData.hero_subtitle || '',
+            hero_bg_image: hData.hero_bg_image || ''
+          });
+        }
 
-        // Prepopulate functional area selectors (Checks if exist or default to 'new') [1]
+        // Prepopulate functional area selectors
         if (abtData.functionalAreas.length > 0 && !selectedAreaId) {
           const firstArea = abtData.functionalAreas[0];
           setSelectedAreaId(firstArea.id);
@@ -108,7 +127,7 @@ export default function AdminDashboard() {
           setSelectedAreaId('new');
         }
 
-        // Prepopulate staff selectors (Checks if exist or default to 'new') [1]
+        // Prepopulate staff directory selectors
         if (abtData.staff.length > 0 && !selectedStaffId) {
           const firstStaff = abtData.staff[0];
           setSelectedStaffId(firstStaff.id);
@@ -122,7 +141,7 @@ export default function AdminDashboard() {
           setSelectedStaffId('new');
         }
 
-        // Prepopulate service selectors
+        // Prepopulate services and programs selectors
         if (srvData.length > 0 && !selectedServiceId) {
           const firstSrv = srvData[0];
           setSelectedServiceId(firstSrv.id);
@@ -177,7 +196,7 @@ export default function AdminDashboard() {
   }, [handleLogout, userRole, selectedAreaId, selectedStaffId, selectedServiceId, selectedOrgId]);
 
   // ==========================================
-  // 3. ACTION HANDLERS (Placed BEFORE conditional returns) [1]
+  // 3. ACTION HANDLERS
   // ==========================================
 
   const handleAreaSelectChange = (id) => {
@@ -246,7 +265,23 @@ export default function AdminDashboard() {
     }
   };
 
-  // Re-added handleStatusChange handler before returns (Fixes undefined error) [1]
+  // Convert and handle home background photo changes (New)
+  const handleHomeImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.size > 2 * 1024 * 1024) {
+        alert('File size is too large. Please select an image smaller than 2MB.');
+        e.target.value = "";
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setHomeForm({ ...homeForm, hero_bg_image: reader.result });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleStatusChange = async (id, newStatus) => {
     const token = localStorage.getItem('token');
     try {
@@ -272,6 +307,41 @@ export default function AdminDashboard() {
     } catch (err) {
       console.error(err);
       alert('Error connecting to server.');
+    }
+  };
+
+  // Submit Home Landing Revisions (New) [1]
+  const handleHomeSubmit = async (e) => {
+    e.preventDefault();
+    setDevSuccessMessage(null);
+    setError(null);
+    const token = localStorage.getItem('token');
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/home`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(homeForm)
+      });
+
+      if (response.status === 401 || response.status === 403) {
+        handleLogout();
+        return;
+      }
+
+      if (response.ok) {
+        setDevSuccessMessage('Homepage Hero landing details updated successfully!');
+        fetchAdminData(true);
+      } else {
+        const data = await response.json();
+        setError(data.error || 'Failed to update Home content.');
+      }
+    } catch (err) {
+      console.error(err);
+      setError('Connection error, could not save updates.');
     }
   };
 
@@ -309,7 +379,6 @@ export default function AdminDashboard() {
     }
   };
 
-  // Create (POST) or Update (PUT) Functional Area [1]
   const handleAreaSubmit = async (e) => {
     e.preventDefault();
     setDevSuccessMessage(null);
@@ -359,7 +428,6 @@ export default function AdminDashboard() {
     }
   };
 
-  // Create (POST) or Update (PUT) Staff Member [1]
   const handleStaffSubmit = async (e) => {
     e.preventDefault();
     setDevSuccessMessage(null);
@@ -400,7 +468,6 @@ export default function AdminDashboard() {
     }
   };
 
-  // Create (POST) or Update (PUT) Service / Program [1]
   const handleServiceSubmit = async (e) => {
     e.preventDefault();
     setDevSuccessMessage(null);
@@ -548,7 +615,7 @@ export default function AdminDashboard() {
   };
 
   // ==========================================
-  // 4. SECURE EFFECT (Wrapped in Timeout)
+  // 4. SECURE DECOUPLED EFFECT
   // ==========================================
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -614,13 +681,77 @@ export default function AdminDashboard() {
             {error && <div className="bg-rose-50 border border-rose-200 text-rose-850 p-3 rounded text-xs mb-6">⚠️ {error}</div>}
             {devSuccessMessage && <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 p-3 rounded text-xs font-semibold mb-6">✅ {devSuccessMessage}</div>}
 
-            {/* --- TAB 1: HOME --- */}
+            {/* --- TAB 1: HOME (Fully Functional Home Page Landing CMS) --- */}
             {devTab === 'home' && (
-              <div className="text-center py-20 text-slate-500">
-                <span className="text-4xl">🚧</span>
-                <h3 className="font-bold text-lg mt-4 text-slate-800">Home Editor</h3>
-                <p className="text-xs text-slate-400 mt-1">will add this one soon</p>
-              </div>
+              <form onSubmit={handleHomeSubmit} className="max-w-2xl mx-auto space-y-6">
+                <h3 className="text-lg font-bold text-slate-800 border-b pb-2">Configure Homepage Landing Details</h3>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-600 uppercase mb-2">Hero Landing Title</label>
+                  <input 
+                    type="text" required
+                    value={homeForm.hero_title}
+                    onChange={(e) => setHomeForm({ ...homeForm, hero_title: e.target.value })}
+                    placeholder="e.g. Nurturing Student Welfare & Growth Outside the Classroom"
+                    className="w-full border border-slate-300 rounded px-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-600 uppercase mb-2">Hero Subtitle/Description</label>
+                  <textarea 
+                    required rows="3"
+                    value={homeForm.hero_subtitle}
+                    onChange={(e) => setHomeForm({ ...homeForm, hero_subtitle: e.target.value })}
+                    placeholder="e.g. Supporting your journey at La Carlota City College..."
+                    className="w-full border border-slate-300 rounded px-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                  ></textarea>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 items-center">
+                  {/* Background Image Upload */}
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-600 uppercase mb-2">Upload Landing Background Image</label>
+                    <input 
+                      id="home-bg-image"
+                      type="file" 
+                      accept="image/*"
+                      onChange={handleHomeImageChange}
+                      className="w-full border border-slate-300 rounded px-3 py-1.5 text-xs bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                    />
+                  </div>
+
+                  {/* Dynamic Image Preview Box */}
+                  {homeForm.hero_bg_image && (
+                    <div className="border border-slate-200 rounded p-3 bg-slate-50 flex items-center space-x-4">
+                      <div className="w-16 h-16 bg-slate-100 rounded border overflow-hidden">
+                        <img 
+                          src={homeForm.hero_bg_image} 
+                          alt="Landing Backdrop Preview" 
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <div className="flex-grow">
+                        <p className="text-[10px] font-bold text-slate-800 leading-snug">Landing Backdrop Preview Loaded</p>
+                        <button 
+                          type="button"
+                          onClick={() => setHomeForm({...homeForm, hero_bg_image: '/school-bg.jpg'})}
+                          className="text-[10px] text-rose-700 hover:underline mt-1 font-semibold block"
+                        >
+                          Reset to default
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <button 
+                  type="submit"
+                  className="w-full bg-emerald-800 hover:bg-emerald-900 text-white font-bold py-3 rounded transition shadow-sm cursor-pointer"
+                >
+                  Save Homepage Hero Revisions
+                </button>
+              </form>
             )}
 
             {/* --- TAB 2: SERVICES --- */}
