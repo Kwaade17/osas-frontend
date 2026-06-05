@@ -1,8 +1,11 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { API_BASE_URL } from '../config'; 
+import { API_BASE_URL } from '../config';
 
 export default function AdminDashboard() {
+  // ==========================================
+  // 1. STATE DECLARATIONS
+  // ==========================================
   const [activeTab, setActiveTab] = useState('appointments');
   const [appointments, setAppointments] = useState([]);
   const [messages, setMessages] = useState([]);
@@ -11,17 +14,29 @@ export default function AdminDashboard() {
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
+  const userRole = localStorage.getItem('role') || 'admin';
+
+  // Developer Dashboard Tabs & State
+  const [devTab, setDevTab] = useState('about');
+  const [aboutData, setAboutData] = useState({
+    content: { heading: '', subheading: '', vision: '', mission: '' },
+    functionalAreas: [],
+    staff: []
+  });
+  const [devSuccessMessage, setDevSuccessMessage] = useState(null);
+
+  const [selectedAreaId, setSelectedAreaId] = useState('');
+  const [selectedStaffId, setSelectedStaffId] = useState('');
+
+  const [areaForm, setAreaForm] = useState({ title: '', description: '', key_operations: '' });
+  const [staffForm, setStaffForm] = useState({ name: '', role: '', initials: '', color: 'bg-emerald-800' });
+
+  // Admin Dashboard State
   const [selectedOrgId, setSelectedOrgId] = useState('');
   const [bulletinText, setBulletinText] = useState('');
   const [bulletinSuccess, setBulletinSuccess] = useState(false);
 
-  const [clubForm, setClubForm] = useState({
-    name: '',
-    acronym: '',
-    org_type: 'Major',
-    description: '',
-    adviser: ''
-  });
+  const [clubForm, setClubForm] = useState({ name: '', acronym: '', org_type: 'Major', description: '', adviser: '' });
   const [clubSuccess, setClubSuccess] = useState(false);
 
   const [announcementForm, setAnnouncementForm] = useState({
@@ -33,9 +48,13 @@ export default function AdminDashboard() {
   });
   const [announcementSuccess, setAnnouncementSuccess] = useState(false);
 
+  // ==========================================
+  // 2. LOGOUT & FETCH HELPERS
+  // ==========================================
   const handleLogout = useCallback(() => {
     localStorage.removeItem('token');
     localStorage.removeItem('admin_name');
+    localStorage.removeItem('role');
     navigate('/login');
   }, [navigate]);
 
@@ -52,35 +71,69 @@ export default function AdminDashboard() {
     }
 
     try {
-      const [apptRes, msgRes, orgRes] = await Promise.all([
-        fetch(`${API_BASE_URL}/api/appointments`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        }),
-        fetch(`${API_BASE_URL}/api/contact`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        }),
-        fetch(`${API_BASE_URL}/api/organizations`) 
-      ]);
+      if (userRole === 'developer') {
+        const response = await fetch(`${API_BASE_URL}/api/about`);
+        if (!response.ok) throw new Error('Failed to load About page text.');
+        const data = await response.json();
+        setAboutData(data);
 
-      if (apptRes.status === 401 || apptRes.status === 403 || msgRes.status === 401 || msgRes.status === 403) {
-        handleLogout();
-        return;
-      }
+        // Prepopulate first functional area card as default selected item, or fallback to new
+        if (data.functionalAreas.length > 0 && !selectedAreaId) {
+          const firstArea = data.functionalAreas[0];
+          setSelectedAreaId(firstArea.id);
+          setAreaForm({
+            title: firstArea.title,
+            description: firstArea.description,
+            key_operations: firstArea.key_operations.join(', ')
+          });
+        } else if (data.functionalAreas.length === 0 && !selectedAreaId) {
+          setSelectedAreaId('new');
+        }
 
-      if (!apptRes.ok || !msgRes.ok || !orgRes.ok) {
-        throw new Error('Failed to load database registries.');
-      }
+        // Prepopulate first staff member card as default selected item, or fallback to new
+        if (data.staff.length > 0 && !selectedStaffId) {
+          const firstStaff = data.staff[0];
+          setSelectedStaffId(firstStaff.id);
+          setStaffForm({
+            name: firstStaff.name,
+            role: firstStaff.role,
+            initials: firstStaff.initials,
+            color: firstStaff.color || 'bg-emerald-800'
+          });
+        } else if (data.staff.length === 0 && !selectedStaffId) {
+          setSelectedStaffId('new');
+        }
+      } else {
+        const [apptRes, msgRes, orgRes] = await Promise.all([
+          fetch(`${API_BASE_URL}/api/appointments`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+          }),
+          fetch(`${API_BASE_URL}/api/contact`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+          }),
+          fetch(`${API_BASE_URL}/api/organizations`)
+        ]);
 
-      const apptData = await apptRes.json();
-      const msgData = await msgRes.json();
-      const orgData = await orgRes.json();
+        if (apptRes.status === 401 || apptRes.status === 403 || msgRes.status === 401 || msgRes.status === 403) {
+          handleLogout();
+          return;
+        }
 
-      setAppointments(apptData);
-      setMessages(msgData);
-      setOrganizations(orgData);
-      
-      if (orgData.length > 0 && !selectedOrgId) {
-        setSelectedOrgId(orgData[0].id); 
+        if (!apptRes.ok || !msgRes.ok || !orgRes.ok) {
+          throw new Error('Failed to load database registries.');
+        }
+
+        const apptData = await apptRes.json();
+        const msgData = await msgRes.json();
+        const orgData = await orgRes.json();
+
+        setAppointments(apptData);
+        setMessages(msgData);
+        setOrganizations(orgData);
+        
+        if (orgData.length > 0 && !selectedOrgId) {
+          setSelectedOrgId(orgData[0].id); 
+        }
       }
     } catch (err) {
       console.error(err);
@@ -88,26 +141,59 @@ export default function AdminDashboard() {
     } finally {
       setIsLoading(false);
     }
-  }, [handleLogout, selectedOrgId]);
+  }, [handleLogout, userRole, selectedAreaId, selectedStaffId, selectedOrgId]);
 
-  useEffect(() => {
-    fetchAdminData(false); 
-  }, [fetchAdminData]);
+  // ==========================================
+  // 3. ACTION HANDLERS
+  // ==========================================
 
-  // File Upload to Base64 Converter Function (New)
+  // Drops Selector for Functional Area Card (Checks for 'new' option) [1]
+  const handleAreaSelectChange = (id) => {
+    setSelectedAreaId(id);
+    if (id === 'new') {
+      // Clear out fields for fresh input
+      setAreaForm({ title: '', description: '', key_operations: '' });
+    } else {
+      const area = aboutData.functionalAreas.find(a => a.id === parseInt(id));
+      if (area) {
+        setAreaForm({
+          title: area.title,
+          description: area.description,
+          key_operations: area.key_operations.join(', ')
+        });
+      }
+    }
+  };
+
+  // Drops Selector for Staff Member Card (Checks for 'new' option) [1]
+  const handleStaffSelectChange = (id) => {
+    setSelectedStaffId(id);
+    if (id === 'new') {
+      // Clear out fields for fresh input
+      setStaffForm({ name: '', role: '', initials: '', color: 'bg-emerald-800' });
+    } else {
+      const person = aboutData.staff.find(s => s.id === parseInt(id));
+      if (person) {
+        setStaffForm({
+          name: person.name,
+          role: person.role,
+          initials: person.initials,
+          color: person.color || 'bg-emerald-800'
+        });
+      }
+    }
+  };
+
   const handleImageFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      // Basic size validation (limit to 2MB to keep database light)
       if (file.size > 2 * 1024 * 1024) {
         alert('File size is too large. Please select an image smaller than 2MB.');
-        e.target.value = ""; // Clear file selector
+        e.target.value = "";
         return;
       }
-
       const reader = new FileReader();
       reader.onloadend = () => {
-        // This will save the image as a long Base64 string directly in the state
         setAnnouncementForm({ ...announcementForm, image_url: reader.result });
       };
       reader.readAsDataURL(file);
@@ -142,6 +228,131 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleAboutContentSubmit = async (e) => {
+    e.preventDefault();
+    setDevSuccessMessage(null);
+    setError(null);
+    const token = localStorage.getItem('token');
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/about/content`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(aboutData.content)
+      });
+
+      if (response.status === 401 || response.status === 403) {
+        handleLogout();
+        return;
+      }
+
+      if (response.ok) {
+        setDevSuccessMessage('Page Headers, Vision, and Mission updated successfully!');
+        fetchAdminData(true);
+      } else {
+        const data = await response.json();
+        setError(data.error || 'Failed to update content.');
+      }
+    } catch (err) {
+      console.error(err);
+      setError('Connection error, could not save updates.');
+    }
+  };
+
+  // Submit Functional Area (Detects whether it needs to POST (Add New) or PUT (Edit)) [1]
+  const handleAreaSubmit = async (e) => {
+    e.preventDefault();
+    setDevSuccessMessage(null);
+    setError(null);
+    const token = localStorage.getItem('token');
+
+    const operationsArray = areaForm.key_operations
+      .split(',')
+      .map(s => s.trim())
+      .filter(s => s.length > 0);
+
+    const isNew = selectedAreaId === 'new';
+    const url = isNew 
+      ? `${API_BASE_URL}/api/about/functional-areas` 
+      : `${API_BASE_URL}/api/about/functional-areas/${selectedAreaId}`;
+    
+    try {
+      const response = await fetch(url, {
+        method: isNew ? 'POST' : 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          title: areaForm.title,
+          description: areaForm.description,
+          key_operations: operationsArray
+        })
+      });
+
+      if (response.status === 401 || response.status === 403) {
+        handleLogout();
+        return;
+      }
+
+      if (response.ok) {
+        setDevSuccessMessage(isNew ? 'New Functional Area registered successfully!' : 'Functional Area updated successfully!');
+        setSelectedAreaId(''); // Reset selector trigger
+        fetchAdminData(true);
+      } else {
+        const data = await response.json();
+        setError(data.error || 'Failed to save card updates.');
+      }
+    } catch (err) {
+      console.error(err);
+      setError('Connection error, could not save card updates.');
+    }
+  };
+
+  // Submit Staff Profile (Detects whether it needs to POST (Add New) or PUT (Edit)) [1]
+  const handleStaffSubmit = async (e) => {
+    e.preventDefault();
+    setDevSuccessMessage(null);
+    setError(null);
+    const token = localStorage.getItem('token');
+
+    const isNew = selectedStaffId === 'new';
+    const url = isNew 
+      ? `${API_BASE_URL}/api/about/staff` 
+      : `${API_BASE_URL}/api/about/staff/${selectedStaffId}`;
+
+    try {
+      const response = await fetch(url, {
+        method: isNew ? 'POST' : 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(staffForm)
+      });
+
+      if (response.status === 401 || response.status === 403) {
+        handleLogout();
+        return;
+      }
+
+      if (response.ok) {
+        setDevSuccessMessage(isNew ? 'New staff profile added successfully!' : 'Staff profile updated successfully!');
+        setSelectedStaffId(''); // Reset selector trigger
+        fetchAdminData(true);
+      } else {
+        const data = await response.json();
+        setError(data.error || 'Failed to save staff updates.');
+      }
+    } catch (err) {
+      console.error(err);
+      setError('Connection error, could not save staff updates.');
+    }
+  };
+
   const handleAnnouncementSubmit = async (e) => {
     e.preventDefault();
     setError(null);
@@ -166,7 +377,6 @@ export default function AdminDashboard() {
       if (response.ok) {
         setAnnouncementSuccess(true);
         setAnnouncementForm({ title: '', category: 'Scholarships', summary: '', content: '', image_url: '' });
-        // Clear file input manually
         const fileInput = document.getElementById('announcement-image');
         if (fileInput) fileInput.value = "";
       } else {
@@ -249,6 +459,299 @@ export default function AdminDashboard() {
     }
   };
 
+  // ==========================================
+  // 4. SECURE DECOUPLED EFFECT
+  // ==========================================
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      fetchAdminData(false); 
+    }, 0);
+    return () => clearTimeout(timer);
+  }, [fetchAdminData]);
+
+  // ==========================================
+  // 5. DEVELOPER DASHBOARD RENDER
+  // ==========================================
+  if (userRole === 'developer') {
+    return (
+      <div className="bg-slate-50 min-h-screen pb-16">
+        
+        {/* Banner */}
+        <div className="bg-emerald-900 text-white py-12 px-4 text-center relative">
+          <h1 className="text-3xl font-extrabold tracking-tight">Developer Editor</h1>
+          <p className="text-emerald-100 mt-2 max-w-xl mx-auto text-sm">
+            Content Management Panel • Logged in as: <span className="font-bold text-white">{localStorage.getItem('admin_name') || 'Developer'}</span>
+          </p>
+          <button 
+            onClick={handleLogout}
+            className="absolute right-4 top-4 bg-emerald-950 hover:bg-rose-950 text-white font-bold text-xs py-1.5 px-3 rounded transition cursor-pointer"
+          >
+            Sign Out
+          </button>
+        </div>
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-10">
+          
+          {/* Tabs */}
+          <div className="flex border-b border-slate-200 bg-white rounded-t-lg border-t border-x overflow-hidden">
+            <button 
+              onClick={() => setDevTab('home')}
+              className={`flex-1 py-4 text-center text-sm font-semibold transition cursor-pointer ${
+                devTab === 'home' ? 'bg-emerald-50 text-emerald-900 border-b-2 border-emerald-800' : 'text-slate-600 hover:bg-slate-50'
+              }`}
+            >
+              🏠 Home
+            </button>
+            <button 
+              onClick={() => setDevTab('about')}
+              className={`flex-1 py-4 text-center text-sm font-semibold transition cursor-pointer ${
+                devTab === 'about' ? 'bg-emerald-50 text-emerald-900 border-b-2 border-emerald-800' : 'text-slate-600 hover:bg-slate-50'
+              }`}
+            >
+              ℹ️ About OSAS
+            </button>
+            <button 
+              onClick={() => setDevTab('services')}
+              className={`flex-1 py-4 text-center text-sm font-semibold transition cursor-pointer ${
+                devTab === 'services' ? 'bg-emerald-50 text-emerald-900 border-b-2 border-emerald-800' : 'text-slate-600 hover:bg-slate-50'
+              }`}
+            >
+              🧠 Services
+            </button>
+          </div>
+
+          {/* Display panel */}
+          <div className="bg-white border-b border-x border-slate-200 rounded-b-lg p-6 min-h-[400px]">
+            
+            {error && <div className="bg-rose-50 border border-rose-200 text-rose-850 p-3 rounded text-xs mb-6">⚠️ {error}</div>}
+            {devSuccessMessage && <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 p-3 rounded text-xs font-semibold mb-6">✅ {devSuccessMessage}</div>}
+
+            {/* --- TAB 1: HOME --- */}
+            {devTab === 'home' && (
+              <div className="text-center py-20 text-slate-500">
+                <span className="text-4xl">🚧</span>
+                <h3 className="font-bold text-lg mt-4 text-slate-800">Home Editor</h3>
+                <p className="text-xs text-slate-400 mt-1">will add this one soon</p>
+              </div>
+            )}
+
+            {/* --- TAB 2: SERVICES --- */}
+            {devTab === 'services' && (
+              <div className="text-center py-20 text-slate-500">
+                <span className="text-4xl">🚧</span>
+                <h3 className="font-bold text-lg mt-4 text-slate-800">Services Editor</h3>
+                <p className="text-xs text-slate-400 mt-1">will add this one soon</p>
+              </div>
+            )}
+
+            {/* --- TAB 3: ABOUT OSAS EDITOR --- */}
+            {devTab === 'about' && (
+              <div className="space-y-12">
+                
+                {/* Section A */}
+                <form onSubmit={handleAboutContentSubmit} className="space-y-4 p-6 bg-slate-50 border border-slate-200 rounded-lg">
+                  <h3 className="font-extrabold text-slate-800 text-base border-b pb-2">Section A: General Page Content</h3>
+                  
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-600 uppercase mb-1">Page Title Heading</label>
+                    <input 
+                      type="text" required
+                      value={aboutData.content.heading || ''}
+                      onChange={(e) => setAboutData({
+                        ...aboutData, 
+                        content: { ...aboutData.content, heading: e.target.value }
+                      })}
+                      className="w-full border border-slate-300 rounded px-3 py-1.5 text-xs bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-600 uppercase mb-1">Subheading Description</label>
+                    <textarea 
+                      required rows="2"
+                      value={aboutData.content.subheading || ''}
+                      onChange={(e) => setAboutData({
+                        ...aboutData, 
+                        content: { ...aboutData.content, subheading: e.target.value }
+                      })}
+                      className="w-full border border-slate-300 rounded px-3 py-1.5 text-xs bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                    ></textarea>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-600 uppercase mb-1">Vision Statement</label>
+                      <textarea 
+                        required rows="4"
+                        value={aboutData.content.vision || ''}
+                        onChange={(e) => setAboutData({
+                          ...aboutData, 
+                          content: { ...aboutData.content, vision: e.target.value }
+                        })}
+                        className="w-full border border-slate-300 rounded px-3 py-1.5 text-xs bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                      ></textarea>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-600 uppercase mb-1">Mission Statement</label>
+                      <textarea 
+                        required rows="4"
+                        value={aboutData.content.mission || ''}
+                        onChange={(e) => setAboutData({
+                          ...aboutData, 
+                          content: { ...aboutData.content, mission: e.target.value }
+                        })}
+                        className="w-full border border-slate-300 rounded px-3 py-1.5 text-xs bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                      ></textarea>
+                    </div>
+                  </div>
+
+                  <button type="submit" className="bg-emerald-800 hover:bg-emerald-900 text-white font-bold py-2 px-6 rounded text-xs transition cursor-pointer">
+                    Save Section A Revisions
+                  </button>
+                </form>
+
+                {/* Section B */}
+                <form onSubmit={handleAreaSubmit} className="space-y-4 p-6 bg-slate-50 border border-slate-200 rounded-lg">
+                  <h3 className="font-extrabold text-slate-800 text-base border-b pb-2">Section B: Edit/Add Functional Areas</h3>
+                  
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-600 uppercase mb-2">Select Card to Edit (Or select Register New Card)</label>
+                    <select 
+                      value={selectedAreaId}
+                      onChange={(e) => handleAreaSelectChange(e.target.value)}
+                      className="w-full max-w-md border border-slate-300 bg-white rounded px-3 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                    >
+                      <option value="new">+ Register New Card</option>
+                      {aboutData.functionalAreas.map((area) => (
+                        <option key={area.id} value={area.id}>{area.title}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-600 uppercase mb-1">Card Title</label>
+                    <input 
+                      type="text" required
+                      value={areaForm.title}
+                      onChange={(e) => setAreaForm({ ...areaForm, title: e.target.value })}
+                      placeholder="e.g. Guidance & Counseling Office"
+                      className="w-full border border-slate-300 rounded px-3 py-1.5 text-xs bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-600 uppercase mb-1">Card Description</label>
+                    <textarea 
+                      required rows="3"
+                      value={areaForm.description}
+                      onChange={(e) => setAreaForm({ ...areaForm, description: e.target.value })}
+                      placeholder="Details of the functional unit..."
+                      className="w-full border border-slate-300 rounded px-3 py-1.5 text-xs bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                    ></textarea>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-600 uppercase mb-1">Key Operations (Comma separated list)</label>
+                    <input 
+                      type="text" required
+                      value={areaForm.key_operations}
+                      onChange={(e) => setAreaForm({ ...areaForm, key_operations: e.target.value })}
+                      placeholder="e.g. Operation 1, Operation 2, Operation 3"
+                      className="w-full border border-slate-300 rounded px-3 py-1.5 text-xs bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                    />
+                    <p className="text-[10px] text-slate-400 mt-1">Separate each operational bullet point with a comma (,)</p>
+                  </div>
+
+                  <button type="submit" className="bg-emerald-800 hover:bg-emerald-900 text-white font-bold py-2 px-6 rounded text-xs transition cursor-pointer">
+                    {selectedAreaId === 'new' ? 'Register and Publish Card' : 'Save Section B Card Revisions'}
+                  </button>
+                </form>
+
+                {/* Section C */}
+                <form onSubmit={handleStaffSubmit} className="space-y-4 p-6 bg-slate-50 border border-slate-200 rounded-lg">
+                  <h3 className="font-extrabold text-slate-800 text-base border-b pb-2">Section C: Edit/Add Administrative Team</h3>
+                  
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-600 uppercase mb-2">Select Staff Member (Or select Add New Staff Profile)</label>
+                    <select 
+                      value={selectedStaffId}
+                      onChange={(e) => handleStaffSelectChange(e.target.value)}
+                      className="w-full max-w-md border border-slate-300 bg-white rounded px-3 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                    >
+                      <option value="new">+ Register New Staff Profile</option>
+                      {aboutData.staff.map((person) => (
+                        <option key={person.id} value={person.id}>{person.name}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div className="sm:col-span-2">
+                      <label className="block text-xs font-semibold text-slate-600 uppercase mb-1">Staff Full Name</label>
+                      <input 
+                        type="text" required
+                        value={staffForm.name}
+                        onChange={(e) => setStaffForm({ ...staffForm, name: e.target.value })}
+                        placeholder="e.g. Maria Clara"
+                        className="w-full border border-slate-300 rounded px-3 py-1.5 text-xs bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-600 uppercase mb-1">Avatar Initials</label>
+                      <input 
+                        type="text" required maxLength="3"
+                        value={staffForm.initials}
+                        onChange={(e) => setStaffForm({ ...staffForm, initials: e.target.value })}
+                        placeholder="e.g. MC"
+                        className="w-full border border-slate-300 rounded px-3 py-1.5 text-xs bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500 text-center"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-600 uppercase mb-1">Official Role/Designation</label>
+                      <input 
+                        type="text" required
+                        value={staffForm.role}
+                        onChange={(e) => setStaffForm({ ...staffForm, role: e.target.value })}
+                        placeholder="e.g. OSAS Staff"
+                        className="w-full border border-slate-300 rounded px-3 py-1.5 text-xs bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-600 uppercase mb-1">Avatar Accent Color</label>
+                      <select 
+                        value={staffForm.color}
+                        onChange={(e) => setStaffForm({ ...staffForm, color: e.target.value })}
+                        className="w-full border border-slate-300 bg-white rounded px-3 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                      >
+                        <option value="bg-emerald-800">Emerald Forest (Primary)</option>
+                        <option value="bg-emerald-700">Sage Accent</option>
+                        <option value="bg-emerald-600">Soft Olive</option>
+                        <option value="bg-emerald-500">Mint Highlight</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <button type="submit" className="bg-emerald-800 hover:bg-emerald-900 text-white font-bold py-2 px-6 rounded text-xs transition cursor-pointer">
+                    {selectedStaffId === 'new' ? 'Register and Publish Staff' : 'Save Section C Staff Revisions'}
+                  </button>
+                </form>
+
+              </div>
+            )}
+
+          </div>
+
+        </div>
+      </div>
+    );
+  }
+
+  // ==========================================
+  // 6. STANDARD ADMIN PANEL RETURN
+  // ==========================================
   return (
     <div className="bg-slate-50 min-h-screen pb-16">
       
@@ -547,7 +1050,7 @@ export default function AdminDashboard() {
                         <option>General</option>
                       </select>
                     </div>
-                    {/* Interactively changed to a secure File Upload selector */}
+                    {/* Cover Image Upload */}
                     <div>
                       <label className="block text-xs font-semibold text-slate-600 uppercase mb-2">Cover Image Upload</label>
                       <input 

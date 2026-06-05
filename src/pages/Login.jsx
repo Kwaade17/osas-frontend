@@ -26,11 +26,10 @@ export default function Login() {
       const data = await response.json();
 
       if (response.ok) {
-        // Save the signed JWT token in localStorage securely
         localStorage.setItem('token', data.token);
         localStorage.setItem('admin_name', data.user.name);
+        localStorage.setItem('role', data.user.role); // Added: Save role to storage [1]
         
-        // Redirect directly to the dashboard
         navigate('/admin');
       } else {
         setError(data.error || 'Authentication failed. Please check credentials.');
