@@ -54,10 +54,10 @@ export default function AdminDashboard() {
 
     try {
       const [apptRes, msgRes, orgRes] = await Promise.all([
-        fetch('http://localhost:5000/api/appointments', {
+        fetch(`${API_BASE_URL}/api/appointments`, {
           headers: { 'Authorization': `Bearer ${token}` }
         }),
-        fetch('http://localhost:5000/api/contact', {
+        fetch(`${API_BASE_URL}/api/contact`, {
           headers: { 'Authorization': `Bearer ${token}` }
         }),
         fetch(`${API_BASE_URL}/api/organizations`) 
@@ -98,7 +98,7 @@ export default function AdminDashboard() {
   const handleStatusChange = async (id, newStatus) => {
     const token = localStorage.getItem('token');
     try {
-      const response = await fetch(`http://localhost:5000/api/appointments/${id}`, {
+      const response = await fetch(`${API_BASE_URL}/api/appointments/${id}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -130,7 +130,7 @@ export default function AdminDashboard() {
     const token = localStorage.getItem('token');
 
     try {
-      const response = await fetch('http://localhost:5000/api/announcements', {
+      const response = await fetch(`${API_BASE_URL}/api/announcements`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -165,7 +165,7 @@ export default function AdminDashboard() {
     const token = localStorage.getItem('token');
 
     try {
-      const response = await fetch('http://localhost:5000/api/organizations', {
+      const response = await fetch(`${API_BASE_URL}/api/organizations`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -200,7 +200,7 @@ export default function AdminDashboard() {
     const token = localStorage.getItem('token');
 
     try {
-      const response = await fetch(`http://localhost:5000/api/organizations/${selectedOrgId}`, {
+      const response = await fetch(`${API_BASE_URL}/api/organizations/${selectedOrgId}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
