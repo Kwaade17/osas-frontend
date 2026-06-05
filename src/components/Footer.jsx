@@ -15,9 +15,9 @@ export default function Footer() {
         <div>
           <h3 className="text-white font-bold text-lg mb-4">Contact Information</h3>
           <ul className="text-sm space-y-2 text-emerald-200">
-            <li>📍 Main Administration Building, Ground Floor, LCCC Campus</li>
-            <li>✉️ osas@lccc.edu.ph</li>
-            <li>📞 (034) 460-XXXX local 104</li>
+            <li>📍 TETC BUILDING ROOM #105</li>
+            {/* <li>✉️ osas@lccc.edu.ph</li>
+            <li>📞 (034) 460-XXXX local 104</li> */}
             <li>🕒 Mon - Fri: 8:00 AM - 5:00 PM</li>
           </ul>
         </div>
@@ -26,9 +26,9 @@ export default function Footer() {
         <div>
           <h3 className="text-white font-bold text-lg mb-4">Student Resources</h3>
           <ul className="text-sm space-y-2">
-            <li><a href="#" className="text-emerald-200 hover:text-white transition">Student Grievance Process</a></li>
-            <li><a href="#" className="text-emerald-200 hover:text-white transition">Scholarship Guidelines</a></li>
-            <li><a href="#" className="text-emerald-200 hover:text-white transition">Club Accreditation Process</a></li>
+            <li><a href="https://lacarlotacitycollege.edu.ph/" className="text-emerald-200 hover:text-white transition">Official La Carlota City College Website</a></li>
+            {/* <li><a href="#" className="text-emerald-200 hover:text-white transition">Scholarship Guidelines</a></li>
+            <li><a href="#" className="text-emerald-200 hover:text-white transition">Club Accreditation Process</a></li> */}
           </ul>
         </div>
 
