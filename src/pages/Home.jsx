@@ -142,7 +142,7 @@ export default function Home() {
             </div>
             <h3 className="text-lg font-bold text-slate-900">Campus Bulletins are Clear</h3>
             <p className="text-xs text-slate-600 leading-relaxed">
-              There are currently no active announcements in the OSAS database. Please check back soon for updates regarding scholarships, student activities, and guidance counseling schedules!
+              There are currently no active announcements available. Please check back soon for updates on scholarships, student activities, and guidance counseling schedules.
             </p>
             <div className="pt-2">
               <span className="inline-block text-[10px] font-bold text-emerald-800 bg-emerald-50 px-3 py-1 rounded-full uppercase tracking-wider">
