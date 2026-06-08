@@ -13,7 +13,7 @@ export default function Navbar() {
           <Link to="/" className="flex items-center space-x-3">
             {/* Logo Image */}
             <img 
-              src="/osas-logo.png" 
+              src="/osas-logo.png"
               alt="LCCC OSAS Logo" 
               className="h-14 w-14 object-contain"
               onError={(e) => {
@@ -32,7 +32,7 @@ export default function Navbar() {
           {/* Desktop Navigation */}
           <div className="hidden md:flex space-x-6 text-sm font-semibold text-slate-600">
             <Link to="/" className="hover:text-emerald-800 transition">Home</Link>
-            <Link to="/about" className="hover:text-emerald-800 transition">About OSAS</Link>
+            <Link to="/about" className="hover:text-emerald-800 transition">About</Link>
             <Link to="/services" className="hover:text-emerald-800 transition">Services</Link>
             <Link to="/student-orgs" className="hover:text-emerald-800 transition">Student Orgs</Link>
             <Link to="/downloads" className="hover:text-emerald-800 transition">Downloads</Link>

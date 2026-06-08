@@ -60,14 +60,14 @@ export default function Home() {
         ================= HERO SECTION (DYNAMICALLY RESOLVED) ================= 
         Loads background, titles, and subtitles directly from your cloud database [1]
       */}
-      <header className="relative py-24 px-4 text-center overflow-hidden min-h-[450px] flex items-center justify-center">
+      <header className="relative py-24 px-4 text-center overflow-hidden min-h-112.5 flex items-center justify-center">
         
         {/* Dynamic Background Image (Loads Base64 or standard path seamlessly) */}
         <div 
           className="absolute inset-0 bg-cover bg-center z-0 transition-all duration-500"
           style={{ backgroundImage: `url('${homeData.hero_bg_image}')` }}
         />
-        <div className="absolute inset-0 bg-gradient-to-br from-emerald-950/95 via-emerald-900/90 to-slate-950/95 z-10" />
+        <div className="absolute inset-0 bg-linear-to-br from-emerald-950/95 via-emerald-900/90 to-slate-950/95 z-10" />
         
         <div className="relative z-20 max-w-4xl mx-auto">
           <h1 className="text-3xl md:text-5xl font-extrabold mb-4 leading-tight text-white">
@@ -83,6 +83,7 @@ export default function Home() {
           </div>
         </div>
       </header>
+
 
       {/* Announcements Section */}
       <section className="max-w-7xl mx-auto px-4 py-16">
@@ -140,7 +141,7 @@ export default function Home() {
             <div className="w-14 h-14 bg-emerald-50 text-emerald-800 rounded-full flex items-center justify-center text-2xl mx-auto">
               📢
             </div>
-            <h3 className="text-lg font-bold text-slate-900">Campus Bulletins are Clear</h3>
+            <h3 className="text-lg font-bold text-slate-900">No Announcements!</h3>
             <p className="text-xs text-slate-600 leading-relaxed">
               There are currently no active announcements available. Please check back soon for updates on scholarships, student activities, and guidance counseling schedules.
             </p>
@@ -153,8 +154,117 @@ export default function Home() {
         )}
       </section>
 
+      {/* ================= LCCC SECTION ================= */}
+      <section className="py-16 bg-white border-b border-slate-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+            
+            {/* 
+              MEDIA COLUMN
+              - To put the image on the RIGHT, add "md:order-last" to the div className below [1]
+              - To put the image on the LEFT, leave the className exactly as is [1]
+            */}
+            <div className="flex justify-center">
+              {/* EDIT: Swap with a <div className="h-64..."><img /></div> if you want an image instead */}
+              <div className="w-80 h-80 overflow-hidden bg-emerald-50 text-emerald-800 rounded-full flex items-center justify-center shadow-sm border border-emerald-100/50">
+                <img src="src/assets/LCCC-logo.png" alt="LCCC Logo" /> {/* EDIT: Change Icon Class */}
+              </div>
+            </div>
+
+            {/* TEXT CONTENT COLUMN */}
+            <div className="space-y-6">
+              <div>
+                <span className="text-xs font-bold uppercase tracking-widest text-emerald-800 bg-emerald-50 px-3 py-1 rounded-full">
+                  La Carlota City College {/* EDIT: Change Subtitle */}
+                </span>
+                <h2 className="text-2xl md:text-3xl font-extrabold text-slate-900 mt-4">
+                  The College {/* EDIT: Change Title */}
+                </h2>
+              </div>
+              
+              <p className="text-slate-600 text-sm md:text-base leading-relaxed">
+                La Carlota City College (LCCC) was established in 1966 with a noble vision: to provide affordable, high-quality tertiary education to the youth of La Carlota City and its neighboring towns. As the first city college in Negros and a recognized center of academic excellence, LCCC remains "A College for the People"—serving as a vital catalyst for positive change, community progress, and student success.
+              </p>
+
+              {/* <div className="pt-2">
+                <button 
+                  onClick={() => alert('Action Triggered!')}
+                  className="bg-emerald-800 hover:bg-emerald-950 text-white font-semibold text-xs py-2.5 px-6 rounded shadow-sm transition cursor-pointer"
+                >
+                  Button Label
+                </button>
+              </div> */}
+
+              <div>
+                <button
+                  className="w-1/3 bg-emerald-800 hover:bg-emerald-950 text-white font-semibold text-xs py-2 px-4 rounded text-center transition cursor-pointer"
+                >
+                  Read More
+                </button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+      {/* =============================================================== */}
+
+      {/* ================= CHED SECTION ================= */}
+      <section className="py-16 bg-white border-b border-slate-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+            
+            {/* 
+              MEDIA COLUMN
+              - To put the image on the RIGHT, add "md:order-last" to the div className below [1]
+              - To put the image on the LEFT, leave the className exactly as is [1]
+            */}
+            <div className="flex justify-center md:order-last">
+              {/* EDIT: Swap with a <div className="h-64..."><img /></div> if you want an image instead */}
+              <div className="w-80 h-80 overflow-hidden bg-emerald-50 text-emerald-800 rounded-full flex items-center justify-center shadow-sm border border-emerald-100/50">
+                <img className="w-full h-full" src="src/assets/CHED-logo.png" alt="LCCC Logo" /> {/* EDIT: Change Icon Class */}
+              </div>
+            </div>
+
+            {/* TEXT CONTENT COLUMN */}
+            <div className="space-y-6">
+              <div>
+                <span className="text-xs font-bold uppercase tracking-widest text-emerald-800 bg-emerald-50 px-3 py-1 rounded-full">
+                  Commission on Higher Education {/* EDIT: Change Subtitle */}
+                </span>
+                <h2 className="text-2xl md:text-3xl font-extrabold text-slate-900 mt-4">
+                  What is CHED-NIR? {/* EDIT: Change Title */}
+                </h2>
+              </div>
+              
+              <p className="text-slate-600 text-sm md:text-base leading-relaxed">
+                CHED-NIR is the newly established regional office of the Commission on Higher Education dedicated to serving the Negros Island Region. Functioning through its main regional office in Dumaguete City and a sub-regional office in Talisay City, CHED-NIR streamlines essential services for local students and institutions—including academic record verification (CAV), institutional quality evaluation, and the administration of national scholarship programs like UniFAST.
+              </p>
+
+              {/* <div className="pt-2">
+                <button 
+                  onClick={() => alert('Action Triggered!')}
+                  className="bg-emerald-800 hover:bg-emerald-950 text-white font-semibold text-xs py-2.5 px-6 rounded shadow-sm transition cursor-pointer"
+                >
+                  Button Label
+                </button>
+              </div> */}
+              <div>
+                <button
+                  className="w-1/3 bg-emerald-800 hover:bg-emerald-950 text-white font-semibold text-xs py-2 px-4 rounded text-center transition cursor-pointer"
+                >
+                  Read More
+                </button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+      {/* =============================================================== */}
+
       {/* Services and Programs Grid */}
-      <section className="bg-white py-16 border-t border-b border-slate-200">
+      <section className="py-16 border-t border-b border-slate-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           
           <h2 className="text-3xl font-extrabold text-slate-900 text-center mb-16">
