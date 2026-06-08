@@ -34,7 +34,6 @@ export default function Navbar() {
           <div className="hidden md:flex space-x-6 text-sm font-semibold text-slate-600">
             <Link to="/" className="hover:text-emerald-800 transition">Home</Link>
             <Link to="/about" className="hover:text-emerald-800 transition">About</Link>
-            <Link to="/services" className="hover:text-emerald-800 transition">Services</Link>
             <Link to="/student-orgs" className="hover:text-emerald-800 transition">Student Orgs</Link>
             <Link to="/downloads" className="hover:text-emerald-800 transition">Downloads</Link>
             <Link to="/contact" className="hover:text-emerald-800 transition">Contact</Link>
@@ -70,7 +69,6 @@ export default function Navbar() {
         <div className="md:hidden bg-white border-t border-slate-100 px-2 pt-2 pb-4 space-y-1 font-semibold text-sm">
           <Link to="/" onClick={() => setIsOpen(false)} className="block px-3 py-2 rounded-md hover:bg-slate-50 text-slate-700">Home</Link>
           <Link to="/about" onClick={() => setIsOpen(false)} className="block px-3 py-2 rounded-md hover:bg-slate-50 text-slate-700">About OSAS</Link>
-          <Link to="/services" onClick={() => setIsOpen(false)} className="block px-3 py-2 rounded-md hover:bg-slate-50 text-slate-700">Services</Link>
           <Link to="/student-orgs" onClick={() => setIsOpen(false)} className="block px-3 py-2 rounded-md hover:bg-slate-50 text-slate-700">Student Orgs</Link>
           <Link to="/downloads" onClick={() => setIsOpen(false)} className="block px-3 py-2 rounded-md hover:bg-slate-50 text-slate-700">Downloads</Link>
           <Link to="/contact" onClick={() => setIsOpen(false)} className="block px-3 py-2 rounded-md hover:bg-slate-50 text-slate-700">Contact</Link>

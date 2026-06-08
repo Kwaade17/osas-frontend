@@ -71,33 +71,6 @@ export default function About() {
               </div>
             </section>
 
-            {/* Functional Areas */}
-            <section>
-              <h2 className="text-2xl md:text-3xl font-extrabold text-slate-800 mb-8 border-b pb-3">
-                Functional Areas Under OSAS
-              </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                {aboutData.functionalAreas.map((area) => (
-                  <div key={area.id} className="bg-white p-8 rounded-lg border border-slate-200 shadow-sm flex flex-col justify-between hover:border-emerald-200 transition">
-                    <div>
-                      <h3 className="text-xl font-bold text-slate-900 mb-3">{area.title}</h3>
-                      <p className="text-slate-600 text-sm leading-relaxed mb-6">{area.description}</p>
-                    </div>
-                    <div>
-                      <h4 className="text-xs font-semibold uppercase text-slate-400 tracking-wider mb-2">Key Operations</h4>
-                      <ul className="text-sm space-y-1.5 text-slate-700">
-                        {area.key_operations.map((point, idx) => (
-                          <li key={idx} className="flex items-center">
-                            <span className="text-emerald-700 mr-2">✓</span> {point}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </section>
-
             {/* Staff Directory */}
             <section>
               <h2 className="text-2xl md:text-3xl font-extrabold text-slate-800 mb-8 border-b pb-3">
