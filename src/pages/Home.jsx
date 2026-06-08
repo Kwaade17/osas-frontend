@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { API_BASE_URL } from '../config';
+import lcccLogo from '../assets/LCCC-logo.png';
+import chedLogo from '../assets/CHED-logo.png'; // Import logo URLs
 
 export default function Home() {
   const [announcements, setAnnouncements] = useState([]);
@@ -167,7 +169,7 @@ export default function Home() {
             <div className="flex justify-center">
               {/* EDIT: Swap with a <div className="h-64..."><img /></div> if you want an image instead */}
               <div className="w-80 h-80 overflow-hidden bg-emerald-50 text-emerald-800 rounded-full flex items-center justify-center shadow-sm border border-emerald-100/50">
-                <img src="src/assets/LCCC-logo.png" alt="LCCC Logo" /> {/* EDIT: Change Icon Class */}
+                <img className="w-full h-full" src={lcccLogo} alt="LCCC Logo" /> {/* EDIT: Change Icon Class */}
               </div>
             </div>
 
@@ -222,7 +224,7 @@ export default function Home() {
             <div className="flex justify-center md:order-last">
               {/* EDIT: Swap with a <div className="h-64..."><img /></div> if you want an image instead */}
               <div className="w-80 h-80 overflow-hidden bg-emerald-50 text-emerald-800 rounded-full flex items-center justify-center shadow-sm border border-emerald-100/50">
-                <img className="w-full h-full" src="src/assets/CHED-logo.png" alt="LCCC Logo" /> {/* EDIT: Change Icon Class */}
+                <img className="w-full h-full" src={chedLogo} alt="CHED Logo" /> {/* EDIT: Change Icon Class */}
               </div>
             </div>
 
