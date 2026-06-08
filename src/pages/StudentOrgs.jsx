@@ -99,27 +99,60 @@ export default function StudentOrgs() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {filteredOrgs.length > 0 ? (
                 filteredOrgs.map((org) => (
-                  <div key={org.id} className="bg-white p-6 rounded-lg border border-slate-200 shadow-sm flex flex-col justify-between hover:border-emerald-200 transition">
-                    <div>
-                      <div className="flex justify-between items-start mb-3">
-                        <span className="text-xs font-bold text-emerald-950 bg-emerald-50 px-2.5 py-0.5 rounded uppercase tracking-wider">
-                          {org.acronym}
-                        </span>
-                        <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest bg-slate-50 px-2 py-0.5 rounded border border-slate-100">
-                          {org.org_type}
-                        </span>
+                  <div key={org.id} className="bg-white p-6 rounded-lg border border-slate-200 shadow-sm hover:border-emerald-200 transition">
+                    <div className="space-y-6">
+                      {/* Top section */}
+                      <div className="grid grid-cols-2 gap-4 items-center">
+                        <div>
+                          <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest bg-slate-50 px-2 py-0.5 rounded border border-slate-100">
+                            {org.org_type}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-end gap-3">
+                          <div className="h-12 w-12 rounded-full bg-emerald-100 text-emerald-900 flex items-center justify-center text-lg font-bold shadow-sm overflow-hidden">
+                            {org.icon_url ? (
+                              <img src={org.icon_url} alt={`${org.name} icon`} className="h-full w-full object-cover" />
+                            ) : (
+                              org.acronym?.slice(0, 2)
+                            )}
+                          </div>
+                          <div className="text-right">
+                            <p className="text-xs font-bold text-slate-900 uppercase tracking-wider">{org.acronym}</p>
+                          </div>
+                        </div>
                       </div>
-                      <h3 className="font-bold text-slate-900 text-base mb-2">{org.name}</h3>
-                      <p className="text-xs text-slate-600 leading-relaxed mb-4">{org.description}</p>
-                      
-                      {/* New Bulletin/Updates Section */}
-                      <div className="bg-emerald-50/50 border border-emerald-100/50 p-3 rounded-md mb-4 mt-2">
-                        <h4 className="text-[10px] font-bold text-emerald-800 uppercase tracking-wider mb-1">📢 Latest Update:</h4>
-                        <p className="text-[11px] text-slate-700 italic leading-snug">{org.latest_update}</p>
+
+                      {/* Middle section */}
+                      <div className="space-y-4">
+                        <h3 className="font-bold text-slate-900 text-lg">{org.name}</h3>
+                        <p className="text-sm text-slate-600 leading-relaxed">{org.description}</p>
+                        <div className="bg-emerald-50/70 border border-emerald-100/70 p-4 rounded-md">
+                          <h4 className="text-[10px] font-bold text-emerald-800 uppercase tracking-wider mb-1">📢 Latest Update</h4>
+                          <p className="text-sm text-slate-700 italic leading-snug">
+                            {org.latest_update || 'No latest update provided yet.'}
+                          </p>
+                        </div>
                       </div>
-                    </div>
-                    <div className="pt-4 border-t border-slate-100 text-[11px] text-slate-500">
-                      🧑‍🏫 Adviser: <span className="font-semibold text-slate-700">{org.adviser}</span>
+
+                      {/* Bottom section */}
+                      <div className="grid grid-cols-2 gap-4 items-center pt-4 border-t border-slate-100">
+                        <button className="inline-flex items-center justify-center rounded-full border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-900 hover:bg-emerald-100 transition">
+                          About More
+                        </button>
+                        <div className="flex items-center justify-end gap-3">
+                          <div className="h-10 w-10 rounded-full overflow-hidden bg-slate-100 ring-1 ring-slate-200 flex items-center justify-center text-[11px] font-bold text-slate-700">
+                            {org.adviser_image ? (
+                              <img src={org.adviser_image} alt={org.adviser} className="h-full w-full object-cover" />
+                            ) : (
+                              org.adviser?.split(' ').map((part) => part[0]).join('').slice(0, 2)
+                            )}
+                          </div>
+                          <div className="text-right text-[11px] text-slate-500">
+                            <div className="font-semibold text-slate-700">{org.adviser}</div>
+                            <div>Adviser</div>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 ))
