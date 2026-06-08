@@ -779,7 +779,7 @@ export default function AdminDashboard() {
           </div>
 
           {/* Display panel */}
-          <div className="bg-white border-b border-x border-slate-200 rounded-b-lg p-6 min-h-[400px]">
+          <div className="bg-white border-b border-x border-slate-200 rounded-b-lg p-6 min-h-100">
             
             {error && <div className="bg-rose-50 border border-rose-200 text-rose-850 p-3 rounded text-xs mb-6">⚠️ {error}</div>}
             {devSuccessMessage && <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 p-3 rounded text-xs font-semibold mb-6">✅ {devSuccessMessage}</div>}
@@ -833,7 +833,7 @@ export default function AdminDashboard() {
                             className="w-full h-full object-cover"
                           />
                         </div>
-                        <div className="flex-grow">
+                        <div className="grow">
                           <p className="text-[10px] font-bold text-slate-800 leading-snug">Landing Backdrop Preview Loaded</p>
                           <button 
                             type="button"
@@ -1369,7 +1369,7 @@ export default function AdminDashboard() {
         </div>
 
         {/* Dynamic Display Area */}
-        <div className="bg-white border-b border-x border-slate-200 rounded-b-lg p-6 min-h-[400px]">
+        <div className="bg-white border-b border-x border-slate-200 rounded-b-lg p-6 min-h-100">
           
           {isLoading && activeTab !== 'post-announcement' && activeTab !== 'org-manager' ? (
             <div className="text-center py-20 text-slate-500 text-sm">Loading registries...</div>
@@ -1634,7 +1634,7 @@ export default function AdminDashboard() {
                           className="w-full h-full object-cover"
                         />
                       </div>
-                      <div className="flex-grow">
+                      <div className="grow">
                         <p className="text-xs font-bold text-slate-800">Cover Image Preview Loaded</p>
                         <button 
                           type="button"
