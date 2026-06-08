@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import osasLogo from '../assets/osas-logo.png'; // Import logo from assets
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -13,7 +14,7 @@ export default function Navbar() {
           <Link to="/" className="flex items-center space-x-3">
             {/* Logo Image */}
             <img 
-              src="/osas-logo.png"
+              src={osasLogo}
               alt="LCCC OSAS Logo" 
               className="h-14 w-14 object-contain"
               onError={(e) => {
