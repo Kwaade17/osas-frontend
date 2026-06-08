@@ -13,7 +13,7 @@ export default function Navbar() {
           <Link to="/" className="flex items-center space-x-3">
             {/* Logo Image */}
             <img 
-              src="/SAO_Logo.jpg" 
+              src="/osas-logo.png" 
               alt="LCCC OSAS Logo" 
               className="h-14 w-14 object-contain"
               onError={(e) => {
