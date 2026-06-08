@@ -96,68 +96,92 @@ export default function StudentOrgs() {
               ⚠️ {error}
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-8">
               {filteredOrgs.length > 0 ? (
-                filteredOrgs.map((org) => (
-                  <div key={org.id} className="bg-white p-6 rounded-lg border border-slate-200 shadow-sm hover:border-emerald-200 transition grid gap-6 h-full">
-                      {/* Top section */}
-                      <div className="grid grid-cols-2 gap-4 items-center">
+                ["Major", "Program-Limited", "College"].map((category) => {
+                  const categoryOrgs = filteredOrgs.filter((org) => org.org_type === category);
+
+                  if (categoryOrgs.length === 0) {
+                    return null;
+                  }
+
+                  return (
+                    <div key={category} className="space-y-4">
+                      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
                         <div>
-                          <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest bg-slate-50 px-2 py-0.5 rounded border border-slate-100">
-                            {org.org_type}
-                          </span>
+                          <h3 className="text-xl font-bold text-slate-900">{category} Organizations</h3>
+                          <p className="text-sm text-slate-500">Grouped by category for easier navigation and review.</p>
                         </div>
-                        <div className="flex items-center justify-end gap-3">
-                          <div className="h-12 w-12 rounded-full bg-emerald-100 text-emerald-900 flex items-center justify-center text-lg font-bold shadow-sm overflow-hidden">
-                            {org.icon_url ? (
-                              <img src={org.icon_url} alt={`${org.name} icon`} className="h-full w-full object-cover" />
-                            ) : (
-                              org.acronym?.slice(0, 2)
-                            )}
-                          </div>
-                          <div className="text-right">
-                            <p className="text-xs font-bold text-slate-900 uppercase tracking-wider">{org.acronym}</p>
-                          </div>
-                        </div>
+                        <span className="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold uppercase tracking-widest text-slate-600">
+                          {categoryOrgs.length} {categoryOrgs.length === 1 ? 'organization' : 'organizations'}
+                        </span>
                       </div>
 
-                      {/* Middle section */}
-                      <div className="flex flex-col justify-between gap-4 h-full">
-                        <div className="space-y-4">
-                          <h3 className="font-bold text-slate-900 text-lg">{org.name}</h3>
-                          <p className="text-sm text-slate-600 leading-relaxed">{org.description}</p>
-                        </div>
-                        <div className="bg-emerald-50/70 border border-emerald-100/70 p-4 rounded-md">
-                          <h4 className="text-[10px] font-bold text-emerald-800 uppercase tracking-wider mb-1">📢 Latest Update</h4>
-                          <p className="text-sm text-slate-700 italic leading-snug">
-                            {org.latest_update || 'No latest update provided yet.'}
-                          </p>
-                        </div>
-                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {categoryOrgs.map((org) => (
+                          <div key={org.id} className="bg-white p-6 rounded-lg border border-slate-200 shadow-sm hover:border-emerald-200 transition grid gap-6 h-full">
+                              {/* Top section */}
+                              <div className="grid grid-cols-2 gap-4 items-center">
+                                <div>
+                                  <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest bg-slate-50 px-2 py-0.5 rounded border border-slate-100">
+                                    {org.org_type}
+                                  </span>
+                                </div>
+                                <div className="flex items-center justify-end gap-3">
+                                  <div className="h-12 w-12 rounded-full bg-emerald-100 text-emerald-900 flex items-center justify-center text-lg font-bold shadow-sm overflow-hidden">
+                                    {org.icon_url ? (
+                                      <img src={org.icon_url} alt={`${org.name} icon`} className="h-full w-full object-cover" />
+                                    ) : (
+                                      org.acronym?.slice(0, 2)
+                                    )}
+                                  </div>
+                                  <div className="text-right">
+                                    <p className="text-xs font-bold text-slate-900 uppercase tracking-wider">{org.acronym}</p>
+                                  </div>
+                                </div>
+                              </div>
 
-                      {/* Bottom section */}
-                      <div className="grid grid-cols-2 gap-4 items-center pt-4 border-t border-slate-100">
-                        <button className="inline-flex items-center justify-center rounded-full border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-900 hover:bg-emerald-100 transition">
-                          About More
-                        </button>
-                        <div className="flex items-center justify-end gap-3">
-                          <div className="h-10 w-10 rounded-full overflow-hidden bg-slate-100 ring-1 ring-slate-200 flex items-center justify-center text-[11px] font-bold text-slate-700">
-                            {org.adviser_image ? (
-                              <img src={org.adviser_image} alt={org.adviser} className="h-full w-full object-cover" />
-                            ) : (
-                              org.adviser?.split(' ').map((part) => part[0]).join('').slice(0, 2)
-                            )}
+                              {/* Middle section */}
+                              <div className="flex flex-col justify-between gap-4 h-full">
+                                <div className="space-y-4">
+                                  <h3 className="font-bold text-slate-900 text-lg">{org.name}</h3>
+                                  <p className="text-sm text-slate-600 leading-relaxed">{org.description}</p>
+                                </div>
+                                <div className="bg-emerald-50/70 border border-emerald-100/70 p-4 rounded-md">
+                                  <h4 className="text-[10px] font-bold text-emerald-800 uppercase tracking-wider mb-1">📢 Latest Update</h4>
+                                  <p className="text-sm text-slate-700 italic leading-snug">
+                                    {org.latest_update || 'No latest update provided yet.'}
+                                  </p>
+                                </div>
+                              </div>
+
+                              {/* Bottom section */}
+                              <div className="grid grid-cols-2 gap-4 items-center pt-4 border-t border-slate-100">
+                                <button className="inline-flex items-center justify-center rounded-full border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-900 hover:bg-emerald-100 transition">
+                                  About More
+                                </button>
+                                <div className="flex items-center justify-end gap-3">
+                                  <div className="h-10 w-10 rounded-full overflow-hidden bg-slate-100 ring-1 ring-slate-200 flex items-center justify-center text-[11px] font-bold text-slate-700">
+                                    {org.adviser_image ? (
+                                      <img src={org.adviser_image} alt={org.adviser} className="h-full w-full object-cover" />
+                                    ) : (
+                                      org.adviser?.split(' ').map((part) => part[0]).join('').slice(0, 2)
+                                    )}
+                                  </div>
+                                  <div className="text-right text-[11px] text-slate-500">
+                                    <div className="font-semibold text-slate-700">{org.adviser}</div>
+                                    <div>Adviser</div>
+                                  </div>
+                                </div>
+                              </div>
                           </div>
-                          <div className="text-right text-[11px] text-slate-500">
-                            <div className="font-semibold text-slate-700">{org.adviser}</div>
-                            <div>Adviser</div>
-                          </div>
-                        </div>
+                        ))}
                       </div>
-                  </div>
-                ))
+                    </div>
+                  );
+                })
               ) : (
-                <div className="col-span-1 md:col-span-2 text-center py-12 bg-white rounded-lg border border-slate-200">
+                <div className="text-center py-12 bg-white rounded-lg border border-slate-200">
                   <span className="text-4xl">⚠️</span>
                   <p className="text-sm text-slate-500 mt-2">No accredited organizations match your search or filters.</p>
                 </div>
