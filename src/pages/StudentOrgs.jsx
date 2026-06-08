@@ -134,7 +134,7 @@ export default function StudentOrgs() {
         </div>
 
         {/* Right Column */}
-        <div className="space-y-6">
+        {/* <div className="space-y-6">
           <div className="bg-gradient-to-br from-emerald-800 to-emerald-950 text-white p-6 rounded-lg shadow-sm">
             <h2 className="text-lg font-bold mb-2">Accreditation Process</h2>
             <p className="text-xs text-emerald-100 leading-relaxed mb-6">
@@ -149,7 +149,7 @@ export default function StudentOrgs() {
               </button>
             </div>
           </div>
-        </div>
+        </div> */}
 
       </div>
     </div>
