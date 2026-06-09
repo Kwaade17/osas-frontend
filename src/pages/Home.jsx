@@ -329,7 +329,7 @@ export default function Home() {
       */}
       {isLcccModalOpen && (
         <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white rounded-lg shadow-xl border border-slate-200 max-w-2xl w-full max-h-[90vh] overflow-y-auto flex flex-col">
+          <div className="bg-white rounded-lg shadow-xl border border-slate-200 max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col">
             
             {/* Modal Header */}
             <div className="bg-emerald-900 text-white px-6 py-5 flex justify-between items-center sticky top-0 z-10 shadow-sm">
@@ -343,7 +343,7 @@ export default function Home() {
             </div>
 
             {/* Modal Hero Image */}
-            <div className="h-48 w-full bg-slate-100 overflow-hidden relative">
+            <div className="h-48 w-full bg-slate-100 relative">
               <img 
                 src={homeData.hero_bg_image || '/school-bg.jpg'} 
                 alt="LCCC Campus" 
@@ -376,7 +376,7 @@ export default function Home() {
             </div>
 
             {/* Modal Dynamic Body Content */}
-            <div className="p-6 grow overflow-y-auto">
+            <div className="p-6 overflow-y-auto flex-1">
               
               {/* --- SUB-TAB A: HISTORY TEXT (EDITABLE) --- */}
               {lcccActiveTab === 'history' && (
