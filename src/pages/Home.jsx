@@ -387,9 +387,6 @@ export default function Home() {
                       <p>{paragraph}</p>
                     </div>
                   ))}
-                  <p>
-                    LCCC holds a distinct legacy as the pioneer city college in the province of Negros Occidental. Over the decades, it has expanded its academic programs, acquired recognition under CHED policies, and graduated thousands of professionals now leading in industries both locally and internationally [1].
-                  </p>
                   <p className="italic bg-emerald-50 border-l-4 border-emerald-800 text-emerald-950 p-3 rounded-r text-xs">
                     "LCCC serves as a vital catalyst for positive change, community progress, and student success."
                   </p>
