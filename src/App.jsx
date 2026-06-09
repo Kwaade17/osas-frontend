@@ -4,6 +4,7 @@ import Footer from './components/Footer';
 import Home from './pages/Home';
 import About from './pages/About';
 import StudentOrgs from './pages/StudentOrgs';
+import Services from './pages/Services'; // Import Services page
 import Downloads from './pages/Downloads';
 import Contact from './pages/Contact';
 import AdminDashboard from './pages/AdminDashboard';
@@ -19,6 +20,7 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/about" element={<About />} />
             <Route path="/student-orgs" element={<StudentOrgs />} />
+            <Route path="/services" element={<Services />} /> {/* Added Services route */}
             <Route path="/downloads" element={<Downloads />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/admin" element={<AdminDashboard />} />

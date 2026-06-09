@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { API_BASE_URL } from '../config';
 import lcccLogo from '../assets/LCCC-logo.png';
 import chedLogo from '../assets/CHED-logo.png'; // Import logo URLs
+import p1 from '../text.js';
 
 export default function Home() {
   const [announcements, setAnnouncements] = useState([]);
@@ -381,9 +382,11 @@ export default function Home() {
               {lcccActiveTab === 'history' && (
                 <div className="space-y-4 text-slate-600 text-sm leading-relaxed">
                   <h4 className="font-extrabold text-slate-900 text-base">Established in 1966</h4>
-                  <p>
-                    La Carlota City College (LCCC) was chartered in 1966 through the collaborative efforts of local government leaders and educational pioneers. Our primary mandate is to provide affordable, accessible, and top-tier higher education for students who might otherwise be constrained by financial barriers [1].
-                  </p>
+                  {p1.map((paragraph, index) => (
+                    <div key={index}>
+                      <p>{paragraph}</p>
+                    </div>
+                  ))}
                   <p>
                     LCCC holds a distinct legacy as the pioneer city college in the province of Negros Occidental. Over the decades, it has expanded its academic programs, acquired recognition under CHED policies, and graduated thousands of professionals now leading in industries both locally and internationally [1].
                   </p>

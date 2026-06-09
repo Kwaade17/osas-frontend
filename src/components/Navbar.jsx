@@ -35,6 +35,7 @@ export default function Navbar() {
             <Link to="/" className="hover:text-emerald-800 transition">Home</Link>
             <Link to="/about" className="hover:text-emerald-800 transition">About</Link>
             <Link to="/student-orgs" className="hover:text-emerald-800 transition">Student Orgs</Link>
+            <Link to="/services" className="hover:text-emerald-800 transition">Services</Link>
             <Link to="/downloads" className="hover:text-emerald-800 transition">Downloads</Link>
             <Link to="/contact" className="hover:text-emerald-800 transition">Contact</Link>
           </div>
@@ -70,6 +71,7 @@ export default function Navbar() {
           <Link to="/" onClick={() => setIsOpen(false)} className="block px-3 py-2 rounded-md hover:bg-slate-50 text-slate-700">Home</Link>
           <Link to="/about" onClick={() => setIsOpen(false)} className="block px-3 py-2 rounded-md hover:bg-slate-50 text-slate-700">About OSAS</Link>
           <Link to="/student-orgs" onClick={() => setIsOpen(false)} className="block px-3 py-2 rounded-md hover:bg-slate-50 text-slate-700">Student Orgs</Link>
+          <Link to="/services" onClick={() => setIsOpen(false)} className="block px-3 py-2 rounded-md hover:bg-slate-50 text-slate-700">Services</Link>
           <Link to="/downloads" onClick={() => setIsOpen(false)} className="block px-3 py-2 rounded-md hover:bg-slate-50 text-slate-700">Downloads</Link>
           <Link to="/contact" onClick={() => setIsOpen(false)} className="block px-3 py-2 rounded-md hover:bg-slate-50 text-slate-700">Contact</Link>
           <div className="pt-4 px-3">
