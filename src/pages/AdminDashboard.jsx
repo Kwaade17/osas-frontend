@@ -666,6 +666,7 @@ export default function AdminDashboard() {
             >
               ℹ️ About OSAS
             </button>
+            
           </div>
 
           {/* Display panel */}
