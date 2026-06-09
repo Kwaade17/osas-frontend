@@ -48,26 +48,6 @@ export default function AdminDashboard() {
     service_type: 'service'
   });
 
-  // Developer Tab: Services Page CMS State (New) [1]
-  const [pageServices, setPageServices] = useState([]);
-  const [selectedPageServiceId, setSelectedPageServiceId] = useState('');
-  const [pageServiceForm, setPageServiceForm] = useState({
-    title: '',
-    icon_emoji: '🧠',
-    description: '',
-    feature_one_title: '',
-    feature_one_desc: '',
-    feature_two_title: '',
-    feature_two_desc: '',
-    feature_three_title: '',
-    feature_three_desc: '',
-    instructions: '',
-    sidebar_title: '',
-    sidebar_text: '',
-    btn_primary_text: '',
-    btn_secondary_text: ''
-  });
-
   // Admin Dashboard State
   const [selectedOrgId, setSelectedOrgId] = useState('');
   const [bulletinText, setBulletinText] = useState('');
@@ -121,11 +101,9 @@ export default function AdminDashboard() {
         const abtData = await aboutRes.json();
         const srvData = await srvRes.json();
         const hData = await homeRes.json();
-        const pgSrvData = await pgSrvRes.json();
 
         setAboutData(abtData);
         setAllServices(srvData);
-        setPageServices(pgSrvData);
         
         // Prepopulate Home Editor Form
         if (hData.hero_title) {
@@ -177,28 +155,6 @@ export default function AdminDashboard() {
           setSelectedServiceId('new');
         }
 
-        // Prepopulate actual Services Page selectors (Services Page) [1]
-        if (pgSrvData.length > 0 && !selectedPageServiceId) {
-          const firstPageSrv = pgSrvData[0];
-          setSelectedPageServiceId(firstPageSrv.id);
-          setPageServiceForm({
-            title: firstPageSrv.title,
-            icon_emoji: firstPageSrv.icon_emoji,
-            description: firstPageSrv.description,
-            feature_one_title: firstPageSrv.feature_one_title,
-            feature_one_desc: firstPageSrv.feature_one_desc,
-            feature_two_title: firstPageSrv.feature_two_title,
-            feature_two_desc: firstPageSrv.feature_two_desc,
-            feature_three_title: firstPageSrv.feature_three_title || '',
-            feature_three_desc: firstPageSrv.feature_three_desc || '',
-            instructions: firstPageSrv.instructions || '',
-            sidebar_title: firstPageSrv.sidebar_title,
-            sidebar_text: pgSrvData[0].sidebar_text,
-            btn_primary_text: firstPageSrv.btn_primary_text,
-            btn_secondary_text: firstPageSrv.btn_secondary_text
-          });
-        }
-
       } else {
         const [apptRes, msgRes, orgRes] = await Promise.all([
           fetch(`${API_BASE_URL}/api/appointments`, {
@@ -237,7 +193,7 @@ export default function AdminDashboard() {
     } finally {
       setIsLoading(false);
     }
-  }, [handleLogout, userRole, selectedAreaId, selectedStaffId, selectedServiceId, selectedPageServiceId, selectedOrgId]);
+  }, [handleLogout, userRole, selectedAreaId, selectedStaffId, selectedServiceId, selectedOrgId]);
 
   // ==========================================
   // 3. ACTION HANDLERS (Properly Scoped at Top) [1]
@@ -290,30 +246,6 @@ export default function AdminDashboard() {
           service_type: srv.service_type
         });
       }
-    }
-  };
-
-  // Selector dropdown change for the actual Services Page [1]
-  const handlePageServiceSelectChange = (id) => {
-    setSelectedPageServiceId(id);
-    const srv = pageServices.find(item => item.id === parseInt(id));
-    if (srv) {
-      setPageServiceForm({
-        title: srv.title,
-        icon_emoji: srv.icon_emoji,
-        description: srv.description,
-        feature_one_title: srv.feature_one_title,
-        feature_one_desc: srv.feature_one_desc,
-        feature_two_title: srv.feature_two_title,
-        feature_two_desc: srv.feature_two_desc,
-        feature_three_title: srv.feature_three_title || '',
-        feature_three_desc: srv.feature_three_desc || '',
-        instructions: srv.instructions || '',
-        sidebar_title: srv.sidebar_title,
-        sidebar_text: srv.sidebar_text,
-        btn_primary_text: srv.btn_primary_text,
-        btn_secondary_text: srv.btn_secondary_text
-      });
     }
   };
 
@@ -576,40 +508,6 @@ export default function AdminDashboard() {
     }
   };
 
-  // Submit Services Page edits (Row 1, 2, or 3) [1]
-  const handlePageServiceSubmit = async (e) => {
-    e.preventDefault();
-    setDevSuccessMessage(null);
-    setError(null);
-    const token = localStorage.getItem('token');
-
-    try {
-      const response = await fetch(`${API_BASE_URL}/api/services-page/${selectedPageServiceId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(pageServiceForm)
-      });
-
-      if (response.status === 401 || response.status === 403) {
-        handleLogout();
-        return;
-      }
-
-      if (response.ok) {
-        setDevSuccessMessage('Services Page details updated successfully!');
-        fetchAdminData(true);
-      } else {
-        const data = await response.json();
-        setError(data.error || 'Failed to update Services page content.');
-      }
-    } catch (err) {
-      console.error(err);
-      setError('Connection error, could not save updates.');
-    }
-  };
 
   const handleAnnouncementSubmit = async (e) => {
     e.preventDefault();
@@ -767,14 +665,6 @@ export default function AdminDashboard() {
               }`}
             >
               ℹ️ About OSAS
-            </button>
-            <button 
-              onClick={() => setDevTab('services')}
-              className={`flex-1 py-4 text-center text-sm font-semibold transition cursor-pointer ${
-                devTab === 'services' ? 'bg-emerald-50 text-emerald-900 border-b-2 border-emerald-800' : 'text-slate-600 hover:bg-slate-50'
-              }`}
-            >
-              🧠 Services
             </button>
           </div>
 
@@ -934,175 +824,6 @@ export default function AdminDashboard() {
                 </form>
 
               </div>
-            )}
-
-            {/* --- TAB 2: SERVICES (The actual Services Page editor) [1] --- */}
-            {devTab === 'services' && (
-              <form onSubmit={handlePageServiceSubmit} className="max-w-2xl mx-auto space-y-6">
-                <h3 className="text-lg font-bold text-slate-800 border-b pb-2">Configure Services Page Layout</h3>
-
-                <div>
-                  <label className="block text-xs font-semibold text-slate-600 uppercase mb-2">Select Service to Edit</label>
-                  <select 
-                    value={selectedPageServiceId}
-                    onChange={(e) => handlePageServiceSelectChange(e.target.value)}
-                    className="w-full border border-slate-300 bg-white rounded px-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                  >
-                    {pageServices.map((item) => (
-                      <option key={item.id} value={item.id}>
-                        {item.title}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-slate-600 uppercase mb-2">Service Title</label>
-                  <input 
-                    type="text" required
-                    value={pageServiceForm.title}
-                    onChange={(e) => setPageServiceForm({ ...pageServiceForm, title: e.target.value })}
-                    className="w-full border border-slate-300 rounded px-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-slate-600 uppercase mb-2">Description</label>
-                  <textarea 
-                    required rows="4"
-                    value={pageServiceForm.description}
-                    onChange={(e) => setPageServiceForm({ ...pageServiceForm, description: e.target.value })}
-                    className="w-full border border-slate-300 rounded px-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                  ></textarea>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-600 uppercase mb-2">Feature One Title</label>
-                    <input 
-                      type="text" required
-                      value={pageServiceForm.feature_one_title}
-                      onChange={(e) => setPageServiceForm({ ...pageServiceForm, feature_one_title: e.target.value })}
-                      className="w-full border border-slate-300 rounded px-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-600 uppercase mb-2">Feature One Description / List (Use newlines for lists)</label>
-                    <textarea 
-                      required rows="3"
-                      value={pageServiceForm.feature_one_desc}
-                      onChange={(e) => setPageServiceForm({ ...pageServiceForm, feature_one_desc: e.target.value })}
-                      className="w-full border border-slate-300 rounded px-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500 bg-white"
-                    ></textarea>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-600 uppercase mb-2">Feature Two Title</label>
-                    <input 
-                      type="text" required
-                      value={pageServiceForm.feature_two_title}
-                      onChange={(e) => setPageServiceForm({ ...pageServiceForm, feature_two_title: e.target.value })}
-                      className="w-full border border-slate-300 rounded px-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-600 uppercase mb-2">Feature Two Description / List (Use newlines for lists)</label>
-                    <textarea 
-                      required rows="3"
-                      value={pageServiceForm.feature_two_desc}
-                      onChange={(e) => setPageServiceForm({ ...pageServiceForm, feature_two_desc: e.target.value })}
-                      className="w-full border border-slate-300 rounded px-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500 bg-white"
-                    ></textarea>
-                  </div>
-                </div>
-
-                {selectedPageServiceId === '2' && ( // Career-specific fields
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 border border-slate-100 p-4 rounded-lg bg-slate-50">
-                    <div>
-                      <label className="block text-xs font-semibold text-slate-600 uppercase mb-2">Feature Three Title</label>
-                      <input 
-                        type="text"
-                        value={pageServiceForm.feature_three_title}
-                        onChange={(e) => setPageServiceForm({ ...pageServiceForm, feature_three_title: e.target.value })}
-                        className="w-full border border-slate-300 rounded px-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500 bg-white"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-semibold text-slate-600 uppercase mb-2">Feature Three Description</label>
-                      <textarea 
-                        rows="2"
-                        value={pageServiceForm.feature_three_desc}
-                        onChange={(e) => setPageServiceForm({ ...pageServiceForm, feature_three_desc: e.target.value })}
-                        className="w-full border border-slate-300 rounded px-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500 bg-white"
-                      ></textarea>
-                    </div>
-                  </div>
-                )}
-
-                {selectedPageServiceId === '1' && ( // Guidance-specific fields
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-600 uppercase mb-2">Booking Instructions (Separate each step with a new line)</label>
-                    <textarea 
-                      rows="4"
-                      value={pageServiceForm.instructions}
-                      onChange={(e) => setPageServiceForm({ ...pageServiceForm, instructions: e.target.value })}
-                      placeholder="e.g. 1. Click the booking button...&#10;2. Fill in details...&#10;3. Confirm..."
-                      className="w-full border border-slate-300 rounded px-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500 bg-white"
-                    ></textarea>
-                  </div>
-                )}
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 border-t border-slate-200 pt-6">
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-600 uppercase mb-2">Sidebar Card Title</label>
-                    <input 
-                      type="text" required
-                      value={pageServiceForm.sidebar_title}
-                      onChange={(e) => setPageServiceForm({ ...pageServiceForm, sidebar_title: e.target.value })}
-                      className="w-full border border-slate-300 rounded px-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-600 uppercase mb-2">Sidebar Card Text Description</label>
-                    <textarea 
-                      required rows="2"
-                      value={pageServiceForm.sidebar_text}
-                      onChange={(e) => setPageServiceForm({ ...pageServiceForm, sidebar_text: e.target.value })}
-                      className="w-full border border-slate-300 rounded px-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500 bg-white"
-                    ></textarea>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-600 uppercase mb-2">Primary Button Text Label</label>
-                    <input 
-                      type="text" required
-                      value={pageServiceForm.btn_primary_text}
-                      onChange={(e) => setPageServiceForm({ ...pageServiceForm, btn_primary_text: e.target.value })}
-                      className="w-full border border-slate-300 rounded px-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-600 uppercase mb-2">Secondary Button Text Label</label>
-                    <input 
-                      type="text" required
-                      value={pageServiceForm.btn_secondary_text}
-                      onChange={(e) => setPageServiceForm({ ...pageServiceForm, btn_secondary_text: e.target.value })}
-                      className="w-full border border-slate-300 rounded px-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                    />
-                  </div>
-                </div>
-
-                <button 
-                  type="submit"
-                  className="w-full bg-emerald-800 hover:bg-emerald-950 text-white font-bold py-3 rounded transition shadow-sm cursor-pointer"
-                >
-                  Save Services Page Revisions
-                </button>
-              </form>
             )}
 
             {/* --- TAB 3: ABOUT OSAS EDITOR --- */}

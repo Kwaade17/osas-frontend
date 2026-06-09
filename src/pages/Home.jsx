@@ -13,6 +13,12 @@ export default function Home() {
   });
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // ==========================================
+  // NEW: LCCC INTERACTIVE MODAL STATE [1]
+  // ==========================================
+  const [isLcccModalOpen, setIsLcccModalOpen] = useState(false);
+  const [lcccActiveTab, setLcccActiveTab] = useState('history'); // Tracks active tab inside modal [1]
   
   useEffect(() => {
     const fetchHomeData = async () => {
@@ -79,9 +85,13 @@ export default function Home() {
             {homeData.hero_subtitle}
           </p>
           <div className="flex justify-center">
-            <button className="bg-white hover:bg-slate-100 text-emerald-950 font-bold px-8 py-3 rounded-md shadow-md transition text-sm cursor-pointer">
+            {/* Navigates smoothly to Services grid below when clicked */}
+            <a 
+              href="#services-section"
+              className="bg-white hover:bg-slate-100 text-emerald-950 font-bold px-8 py-3 rounded-md shadow-md transition text-sm cursor-pointer"
+            >
               Explore Our Services
-            </button>
+            </a>
           </div>
         </div>
       </header>
@@ -161,15 +171,9 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
             
-            {/* 
-              MEDIA COLUMN
-              - To put the image on the RIGHT, add "md:order-last" to the div className below [1]
-              - To put the image on the LEFT, leave the className exactly as is [1]
-            */}
             <div className="flex justify-center">
-              {/* EDIT: Swap with a <div className="h-64..."><img /></div> if you want an image instead */}
               <div className="w-80 h-80 overflow-hidden bg-emerald-50 text-emerald-800 rounded-full flex items-center justify-center shadow-sm border border-emerald-100/50">
-                <img className="w-full h-full" src={lcccLogo} alt="LCCC Logo" /> {/* EDIT: Change Icon Class */}
+                <img className="w-full h-full" src={lcccLogo} alt="LCCC Logo" />
               </div>
             </div>
 
@@ -177,10 +181,10 @@ export default function Home() {
             <div className="space-y-6">
               <div>
                 <span className="text-xs font-bold uppercase tracking-widest text-emerald-800 bg-emerald-50 px-3 py-1 rounded-full">
-                  La Carlota City College {/* EDIT: Change Subtitle */}
+                  La Carlota City College
                 </span>
                 <h2 className="text-2xl md:text-3xl font-extrabold text-slate-900 mt-4">
-                  The College {/* EDIT: Change Title */}
+                  The College
                 </h2>
               </div>
               
@@ -188,18 +192,11 @@ export default function Home() {
                 La Carlota City College (LCCC) was established in 1966 with a noble vision: to provide affordable, high-quality tertiary education to the youth of La Carlota City and its neighboring towns. As the first city college in Negros and a recognized center of academic excellence, LCCC remains "A College for the People"—serving as a vital catalyst for positive change, community progress, and student success.
               </p>
 
-              {/* <div className="pt-2">
-                <button 
-                  onClick={() => alert('Action Triggered!')}
-                  className="bg-emerald-800 hover:bg-emerald-950 text-white font-semibold text-xs py-2.5 px-6 rounded shadow-sm transition cursor-pointer"
-                >
-                  Button Label
-                </button>
-              </div> */}
-
               <div>
+                {/* Trigger: Open Interactive LCCC Detail Modal */}
                 <button
-                  className="w-1/3 bg-emerald-800 hover:bg-emerald-950 text-white font-semibold text-xs py-2 px-4 rounded text-center transition cursor-pointer"
+                  onClick={() => setIsLcccModalOpen(true)}
+                  className="w-1/3 bg-emerald-800 hover:bg-emerald-950 text-white font-semibold text-xs py-2.5 px-4 rounded text-center transition cursor-pointer"
                 >
                   Read More
                 </button>
@@ -216,15 +213,9 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
             
-            {/* 
-              MEDIA COLUMN
-              - To put the image on the RIGHT, add "md:order-last" to the div className below [1]
-              - To put the image on the LEFT, leave the className exactly as is [1]
-            */}
             <div className="flex justify-center md:order-last">
-              {/* EDIT: Swap with a <div className="h-64..."><img /></div> if you want an image instead */}
               <div className="w-80 h-80 overflow-hidden bg-emerald-50 text-emerald-800 rounded-full flex items-center justify-center shadow-sm border border-emerald-100/50">
-                <img className="w-full h-full" src={chedLogo} alt="CHED Logo" /> {/* EDIT: Change Icon Class */}
+                <img className="w-full h-full" src={chedLogo} alt="CHED Logo" />
               </div>
             </div>
 
@@ -232,10 +223,10 @@ export default function Home() {
             <div className="space-y-6">
               <div>
                 <span className="text-xs font-bold uppercase tracking-widest text-emerald-800 bg-emerald-50 px-3 py-1 rounded-full">
-                  Commission on Higher Education {/* EDIT: Change Subtitle */}
+                  Commission on Higher Education
                 </span>
                 <h2 className="text-2xl md:text-3xl font-extrabold text-slate-900 mt-4">
-                  What is CHED-NIR? {/* EDIT: Change Title */}
+                  What is CHED-NIR?
                 </h2>
               </div>
               
@@ -243,16 +234,10 @@ export default function Home() {
                 CHED-NIR is the newly established regional office of the Commission on Higher Education dedicated to serving the Negros Island Region. Functioning through its main regional office in Dumaguete City and a sub-regional office in Talisay City, CHED-NIR streamlines essential services for local students and institutions—including academic record verification (CAV), institutional quality evaluation, and the administration of national scholarship programs like UniFAST.
               </p>
 
-              {/* <div className="pt-2">
-                <button 
-                  onClick={() => alert('Action Triggered!')}
-                  className="bg-emerald-800 hover:bg-emerald-950 text-white font-semibold text-xs py-2.5 px-6 rounded shadow-sm transition cursor-pointer"
-                >
-                  Button Label
-                </button>
-              </div> */}
               <div>
+                {/* Securely open official CHED resource in a new tab [1] */}
                 <button
+                  onClick={() => window.open('https://ched.gov.ph', '_blank', 'noopener,noreferrer')}
                   className="w-1/3 bg-emerald-800 hover:bg-emerald-950 text-white font-semibold text-xs py-2 px-4 rounded text-center transition cursor-pointer"
                 >
                   Read More
@@ -266,7 +251,7 @@ export default function Home() {
       {/* =============================================================== */}
 
       {/* Services and Programs Grid */}
-      <section className="py-16 border-t border-b border-slate-200">
+      <section id="services-section" className="py-16 border-t border-b border-slate-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           
           <h2 className="text-3xl font-extrabold text-slate-900 text-center mb-16">
@@ -332,6 +317,161 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* 
+        ===================================================================
+        NEW: LCCC INTERACTIVE DETAIL OVERLAY MODAL (CUSTOMIZABLE SNIPPET) [1]
+        ===================================================================
+        - This is the interactive overlay triggered by clicking "Read More" under the LCCC section [1].
+        - It uses your Emerald-Green & White theme and features internal tabs to swap details [1].
+        - Scroll down and edit the text inside any tab segment to customize your LCCC content! [1]
+      */}
+      {isLcccModalOpen && (
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white rounded-lg shadow-xl border border-slate-200 max-w-2xl w-full max-h-[90vh] overflow-y-auto flex flex-col">
+            
+            {/* Modal Header */}
+            <div className="bg-emerald-900 text-white px-6 py-5 flex justify-between items-center sticky top-0 z-10 shadow-sm">
+              <div className="flex items-center space-x-3">
+                <img src={lcccLogo} alt="LCCC Seal" className="h-10 w-10 bg-white rounded-full p-1" />
+                <div>
+                  <h3 className="font-extrabold text-base leading-tight">La Carlota City College</h3>
+                  <p className="text-[10px] text-emerald-200 uppercase tracking-widest font-semibold mt-0.5">History of La Carlota City College</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Modal Hero Image */}
+            <div className="h-48 w-full bg-slate-100 overflow-hidden relative">
+              <img 
+                src={homeData.hero_bg_image || '/school-bg.jpg'} 
+                alt="LCCC Campus" 
+                className="w-full h-full object-cover"
+              />
+              <div className="absolute inset-0 bg-linear-to-t from-black/50 to-transparent" />
+              <span className="absolute bottom-4 left-6 text-white font-bold text-lg">"A College for the People"</span>
+            </div>
+
+            {/* Modal Interactive Navigation Tabs [1] */}
+            <div className="flex border-b border-slate-200 bg-slate-50 text-xs font-semibold text-slate-600">
+              <button 
+                onClick={() => setLcccActiveTab('history')}
+                className={`flex-1 py-3 text-center border-b-2 transition cursor-pointer ${lcccActiveTab === 'history' ? 'border-emerald-800 text-emerald-900 font-bold bg-white' : 'border-transparent hover:bg-slate-100'}`}
+              >
+                📖 Our History
+              </button>
+              <button 
+                onClick={() => setLcccActiveTab('campuses')}
+                className={`flex-1 py-3 text-center border-b-2 transition cursor-pointer ${lcccActiveTab === 'campuses' ? 'border-emerald-800 text-emerald-900 font-bold bg-white' : 'border-transparent hover:bg-slate-100'}`}
+              >
+                🏫 Campuses
+              </button>
+              <button 
+                onClick={() => setLcccActiveTab('values')}
+                className={`flex-1 py-3 text-center border-b-2 transition cursor-pointer ${lcccActiveTab === 'values' ? 'border-emerald-800 text-emerald-900 font-bold bg-white' : 'border-transparent hover:bg-slate-100'}`}
+              >
+                💎 Core Values
+              </button>
+            </div>
+
+            {/* Modal Dynamic Body Content */}
+            <div className="p-6 grow overflow-y-auto">
+              
+              {/* --- SUB-TAB A: HISTORY TEXT (EDITABLE) --- */}
+              {lcccActiveTab === 'history' && (
+                <div className="space-y-4 text-slate-600 text-sm leading-relaxed">
+                  <h4 className="font-extrabold text-slate-900 text-base">Established in 1966</h4>
+                  <p>
+                    La Carlota City College (LCCC) was chartered in 1966 through the collaborative efforts of local government leaders and educational pioneers. Our primary mandate is to provide affordable, accessible, and top-tier higher education for students who might otherwise be constrained by financial barriers [1].
+                  </p>
+                  <p>
+                    LCCC holds a distinct legacy as the pioneer city college in the province of Negros Occidental. Over the decades, it has expanded its academic programs, acquired recognition under CHED policies, and graduated thousands of professionals now leading in industries both locally and internationally [1].
+                  </p>
+                  <p className="italic bg-emerald-50 border-l-4 border-emerald-800 text-emerald-950 p-3 rounded-r text-xs">
+                    "LCCC serves as a vital catalyst for positive change, community progress, and student success."
+                  </p>
+                </div>
+              )}
+
+              {/* --- SUB-TAB B: CAMPUS DETAILS (EDITABLE) --- */}
+              {lcccActiveTab === 'campuses' && (
+                <div className="space-y-4 text-slate-600 text-sm leading-relaxed">
+                  <h4 className="font-extrabold text-slate-900 text-base">Our Learning Centers</h4>
+                  <p>
+                    LCCC provides conducive study, recreational, and organizational facilities across our campuses to support student integration and holistic development [1].
+                  </p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                    <div className="border border-slate-100 p-4 rounded-lg bg-slate-50">
+                      <h5 className="font-bold text-slate-800 text-xs uppercase tracking-wider mb-1">🏢 Main Administration Campus</h5>
+                      <p className="text-xs text-slate-500">Houses central administrative offices, the main library, science labs, and academic classrooms for foundational college programs.</p>
+                    </div>
+                    <div className="border border-slate-100 p-4 rounded-lg bg-slate-50">
+                      <h5 className="font-bold text-slate-800 text-xs uppercase tracking-wider mb-1">🏛️ LCCC Gymnasium & Oval</h5>
+                      <p className="text-xs text-slate-500">The premier location for physical development, university athletic events, club assemblies, and the annual student organization fair.</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* --- SUB-TAB C: CORE VALUES (EDITABLE WITH ICONS) --- */}
+              {lcccActiveTab === 'values' && (
+                <div className="space-y-6">
+                  <h4 className="font-extrabold text-slate-900 text-base">The Pillars of LCCC</h4>
+                  <div className="space-y-4">
+                    
+                    {/* Value 1 */}
+                    <div className="flex items-start space-x-3">
+                      <div className="text-emerald-700 bg-emerald-50 h-8 w-8 rounded-full flex items-center justify-center text-xs shrink-0 mt-1">
+                        <i className="fa-solid fa-medal"></i>
+                      </div>
+                      <div>
+                        <h5 className="font-bold text-slate-900 text-sm">Academic Excellence</h5>
+                        <p className="text-xs text-slate-500 leading-relaxed mt-0.5">Striving constantly to deliver quality tertiary programs accredited under national education commissions [1].</p>
+                      </div>
+                    </div>
+
+                    {/* Value 2 */}
+                    <div className="flex items-start space-x-3">
+                      <div className="text-emerald-700 bg-emerald-50 h-8 w-8 rounded-full flex items-center justify-center text-xs shrink-0 mt-1">
+                        <i className="fa-solid fa-handshake-angle"></i>
+                      </div>
+                      <div>
+                        <h5 className="font-bold text-slate-900 text-sm">Social Responsibility</h5>
+                        <p className="text-xs text-slate-500 leading-relaxed mt-0.5">Empowering community-driven programs, waste-reduction campaigns, and active socio-civic leadership.</p>
+                      </div>
+                    </div>
+
+                    {/* Value 3 */}
+                    <div className="flex items-start space-x-3">
+                      <div className="text-emerald-700 bg-emerald-50 h-8 w-8 rounded-full flex items-center justify-center text-xs shrink-0 mt-1">
+                        <i className="fa-solid fa-star-and-crescent"></i>
+                      </div>
+                      <div>
+                        <h5 className="font-bold text-slate-900 text-sm">Inclusivity & Character</h5>
+                        <p className="text-xs text-slate-500 leading-relaxed mt-0.5">Preserving a welcoming environment that values diversity, protects student rights, and builds moral standards.</p>
+                      </div>
+                    </div>
+
+                  </div>
+                </div>
+              )}
+
+            </div>
+
+            {/* Modal Footer */}
+            <div className="border-t border-slate-100 p-4 bg-slate-50 flex justify-end">
+              <button 
+                onClick={() => setIsLcccModalOpen(false)}
+                className="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold text-xs py-2 px-6 rounded transition cursor-pointer"
+              >
+                Close
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
+      {/* =================================================================== */}
 
     </div>
   );
