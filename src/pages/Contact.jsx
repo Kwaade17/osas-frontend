@@ -162,14 +162,14 @@ export default function Contact() {
           <div className="bg-white p-8 rounded-lg border border-slate-200 shadow-sm space-y-4">
             <h2 className="text-lg font-bold text-slate-800 border-b pb-2">Office Headquarters</h2>
             <div className="space-y-3 text-sm text-slate-600">
-              <p>📍 <span className="font-semibold text-slate-800">Location:</span> Administration Hall, Ground Floor, East Wing</p>
+              <p>📍 <span className="font-semibold text-slate-800">Location:</span> TETC BUILDING - ROOM #5</p>
               <p>🕒 <span className="font-semibold text-slate-800">Working Hours:</span> Monday to Friday, 8:00 AM - 5:00 PM</p>
-              <p>✉️ <span className="font-semibold text-slate-800">Direct Email Address:</span> osas@school.edu.ph</p>
-              <p>📞 <span className="font-semibold text-slate-800">Main Telephone Line:</span> (02) 8123-4567 local 104</p>
+              {/* <p>✉️ <span className="font-semibold text-slate-800">Direct Email Address:</span> osas@school.edu.ph</p>
+              <p>📞 <span className="font-semibold text-slate-800">Main Telephone Line:</span> (02) 8123-4567 local 104</p> */}
             </div>
           </div>
 
-          <div className="bg-white p-8 rounded-lg border border-slate-200 shadow-sm">
+          {/* <div className="bg-white p-8 rounded-lg border border-slate-200 shadow-sm">
             <h2 className="text-lg font-bold text-slate-800 mb-4 border-b pb-2">Unit Directory & Hotlines</h2>
             <div className="space-y-4">
               <div className="flex justify-between text-sm py-1 border-b border-slate-100">
@@ -189,7 +189,7 @@ export default function Contact() {
                 <span className="text-xs text-slate-500">local 115 • chronicle@student.edu.ph</span>
               </div>
             </div>
-          </div>
+          </div> */}
         </div>
 
       </div>

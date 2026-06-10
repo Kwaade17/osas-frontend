@@ -72,6 +72,9 @@ export default function Home() {
         <div className="absolute inset-0 bg-linear-to-br from-emerald-950/95 via-emerald-900/90 to-slate-950/95 z-10" />
 
         <div className="relative z-20 max-w-4xl mx-auto">
+          <div className="flex flex-col justify-center md:w-13 md:h-13 w-9 h-9 mx-auto mb-2 bg-linear-to-br from-emerald-500 via-emerald-900 to-slate-900 rounded-full">
+            <i className="fa-solid fa-hand-holding-hand md:text-xl text-md text-white"></i>
+          </div>
           <h3 className="sm:text-2xl text-sm font-medium mb-1 text-emerald-300">
             Office of the Student Affairs and Services
           </h3>
