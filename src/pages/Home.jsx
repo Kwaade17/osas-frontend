@@ -386,6 +386,7 @@ export default function Home() {
                     <div key={index}>
                       <p>{paragraph}</p>
                     </div>
+                    
                   ))}
                   <p className="italic bg-emerald-50 border-l-4 border-emerald-800 text-emerald-950 p-3 rounded-r text-xs">
                     "LCCC serves as a vital catalyst for positive change, community progress, and student success."
