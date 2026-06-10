@@ -6,7 +6,6 @@ import p1 from '../text.js';
 
 export default function Home() {
   const [announcements, setAnnouncements] = useState([]);
-  const [services, setServices] = useState([]);
   const [homeData, setHomeData] = useState({
     hero_title: 'Nurturing Student Welfare & Growth Outside the Classroom',
     hero_subtitle: 'Supporting your journey at La Carlota City College through personal development, counseling, activities, and campus life advocacy.',
@@ -24,22 +23,19 @@ export default function Home() {
   useEffect(() => {
     const fetchHomeData = async () => {
       try {
-        const [annRes, srvRes, homeRes] = await Promise.all([
+        const [annRes, homeRes] = await Promise.all([
           fetch(`${API_BASE_URL}/api/announcements`),
-          fetch(`${API_BASE_URL}/api/site-services`),
           fetch(`${API_BASE_URL}/api/home`) // Fetch dynamic hero contents [1]
         ]);
         
-        if (!annRes.ok || !srvRes.ok || !homeRes.ok) {
+        if (!annRes.ok || !homeRes.ok) {
           throw new Error('Failed to retrieve homepage data.');
         }
         
         const annData = await annRes.json();
-        const srvData = await srvRes.json();
         const hData = await homeRes.json();
         
         setAnnouncements(annData);
-        setServices(srvData);
         if (hData.hero_title) {
           setHomeData(hData); // Populate dynamic homepage text/image [1]
         }
@@ -59,9 +55,6 @@ export default function Home() {
     return new Date(dateString).toLocaleDateString(undefined, options);
   };
   
-  const renderedServices = services.filter(item => item.service_type === 'service');
-  const renderedPrograms = services.filter(item => item.service_type === 'program');
-  
   return (
     <div className="bg-slate-50 min-h-screen">
       
@@ -77,23 +70,18 @@ export default function Home() {
           style={{ backgroundImage: `url('${homeData.hero_bg_image}')` }}
         />
         <div className="absolute inset-0 bg-linear-to-br from-emerald-950/95 via-emerald-900/90 to-slate-950/95 z-10" />
-        
+
         <div className="relative z-20 max-w-4xl mx-auto">
+          <h3 className="sm:text-2xl text-sm font-medium mb-1 text-emerald-300">
+            Office of the Student Affairs and Services
+          </h3>
+          <div className="sm:max-w-xs max-w-1/2 mx-auto h-0.5 mb-5 bg-white/50" />
           <h1 className="text-3xl md:text-5xl font-extrabold mb-4 leading-tight text-white">
             {homeData.hero_title}
           </h1>
           <p className="text-sm md:text-base text-emerald-100/90 mb-8 max-w-2xl mx-auto leading-relaxed">
             {homeData.hero_subtitle}
           </p>
-          <div className="flex justify-center">
-            {/* Navigates smoothly to Services grid below when clicked */}
-            <a 
-              href="#services-section"
-              className="bg-white hover:bg-slate-100 text-emerald-950 font-bold px-8 py-3 rounded-md shadow-md transition text-sm cursor-pointer"
-            >
-              Explore Our Services
-            </a>
-          </div>
         </div>
       </header>
 
@@ -250,74 +238,6 @@ export default function Home() {
         </div>
       </section>
       {/* =============================================================== */}
-
-      {/* Services and Programs Grid */}
-      <section id="services-section" className="py-16 border-t border-b border-slate-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          
-          <h2 className="text-3xl font-extrabold text-slate-900 text-center mb-16">
-            Services and Programs
-          </h2>
-          
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-            
-            {/* LEFT COLUMN: SERVICES */}
-            <div className="lg:col-span-2 space-y-6">
-              <h3 className="text-xs font-bold uppercase tracking-widest text-emerald-800 mb-4 border-b border-emerald-100 pb-2">
-                Our Services
-              </h3>
-              
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                {renderedServices.length > 0 ? (
-                  renderedServices.map((srv) => (
-                    <div key={srv.id} className="p-6 bg-slate-50/50 rounded-lg border border-slate-200 hover:border-emerald-400 hover:shadow-sm transition flex flex-col justify-between">
-                      <div>
-                        <div className="h-10 w-10 bg-emerald-50 text-emerald-800 rounded-lg flex items-center justify-center mb-4 text-base shadow-sm border border-emerald-100/40">
-                          <i className={srv.icon_class || 'fa-solid fa-brain'}></i>
-                        </div>
-                        <h4 className="font-bold text-base text-slate-800 mb-2">{srv.title}</h4>
-                        <p className="text-xs text-slate-600 leading-relaxed">
-                          {srv.description}
-                        </p>
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <p className="text-xs text-slate-400 italic">No services listed.</p>
-                )}
-              </div>
-            </div>
-
-            {/* RIGHT COLUMN: PROGRAMS */}
-            <div className="lg:col-span-1 space-y-6">
-              <h3 className="text-xs font-bold uppercase tracking-widest text-emerald-800 mb-4 border-b border-emerald-100 pb-2">
-                Flagship Programs
-              </h3>
-              
-              <div className="grid grid-cols-1 gap-6">
-                {renderedPrograms.length > 0 ? (
-                  renderedPrograms.map((prg) => (
-                    <div key={prg.id} className="p-6 bg-slate-50/50 rounded-lg border border-slate-200 hover:border-emerald-400 hover:shadow-sm transition flex flex-col justify-between">
-                      <div>
-                        <div className="h-10 w-10 bg-emerald-50 text-emerald-800 rounded-lg flex items-center justify-center mb-4 text-base shadow-sm border border-emerald-100/40">
-                          <i className={prg.icon_class || 'fa-solid fa-trophy'}></i>
-                        </div>
-                        <h4 className="font-bold text-base text-slate-800 mb-2">{prg.title}</h4>
-                        <p className="text-xs text-slate-600 leading-relaxed">
-                          {prg.description}
-                        </p>
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <p className="text-xs text-slate-400 italic">No flagship programs listed.</p>
-                )}
-              </div>
-            </div>
-
-          </div>
-        </div>
-      </section>
 
       {/* 
         ===================================================================
