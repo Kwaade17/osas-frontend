@@ -76,11 +76,11 @@ function Services() {
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 grid grid-cols-1 gap-8">
                 {/* Left/Middle Column: Directory & Filter */}
                 <div className="lg:col-span-2 space-y-6">
-                    <div className="bg-white p-6 rounded-lg border border-slate-200 shadow-sm space-y-4">
-                        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+                    <div className="bg-white border-slate-200 shadow-sm space-y-4 rounded-xl overflow-hidden">
+                        <div className="max-w-7xl mx-auto lg:px-8">
           
                             {/* Tabs */}
-                            <div className="flex border-b border-slate-200 bg-white rounded-t-lg border-t border-x overflow-hidden">
+                            <div className="flex border-b border-slate-200 bg-white rounded-t-xl border-t border-x overflow-hidden">
                                 <button 
                                     className={`flex-1 py-4 text-center text-sm font-semibold transition cursor-pointer ${selectedTab === 'id-process' ? 'bg-emerald-500 text-white' : 'hover:bg-slate-100'}`}
                                     onClick={() => setSelectedTab('id-process')}
@@ -102,7 +102,7 @@ function Services() {
                             </div>
 
                             {/* ID Process */}
-                            <div className={`bg-white border-b border-x border-slate-200 rounded-b-lg p-6 min-h-full ${selectedTab === 'id-process' ? 'block' : 'hidden'}`}>
+                            <div className={`bg-white rounded-b-xl border-x border-slate-200 p-6 min-h-full ${selectedTab === 'id-process' ? 'block' : 'hidden'}`}>
                                 {!isSubmitted ? (
                                     <form onSubmit={handleSubmit} className="min-h-full flex flex-col gap-6">
                                         <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_auto] items-center">
@@ -231,11 +231,11 @@ function Services() {
                                         <ul className="mt-4 space-y-3 text-sm leading-6">
                                             <li className="flex items-center gap-3">
                                                 <span className="inline-flex h-2.5 w-2.5 rounded-full bg-emerald-700"></span>
-                                                <span className="sm:w-md md:w-full">2x2 ID Picture (colored with white background)</span>
+                                                <span className="max-w-10/12 md:w-full">2x2 ID Picture (colored with white background)</span>
                                             </li>
                                             <li className="flex items-center gap-3">
                                                 <span className="inline-flex h-2.5 w-2.5 rounded-full bg-emerald-700"></span>
-                                                <span className="sm:w-md md:w-full">Photocopy of Birth Certificate (PSA)</span>
+                                                <span className="max-w-10/12 md:w-full">Photocopy of Birth Certificate (PSA)</span>
                                             </li>
                                             <li className="flex items-center gap-3">
                                                 <span className="inline-flex h-2.5 w-2.5 rounded-full bg-emerald-700"></span>
