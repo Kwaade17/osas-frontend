@@ -27,8 +27,9 @@ export default function Footer() {
           <h3 className="text-white font-bold text-lg mb-4">Student Resources</h3>
           <ul className="text-sm space-y-2">
             <li><a href="https://lacarlotacitycollege.edu.ph/" className="text-emerald-200 hover:text-white transition">Official La Carlota City College Website</a></li>
-            {/* <li><a href="#" className="text-emerald-200 hover:text-white transition">Scholarship Guidelines</a></li>
-            <li><a href="#" className="text-emerald-200 hover:text-white transition">Club Accreditation Process</a></li> */}
+            <li><a href="https://lcccautomate.net/" className="text-emerald-200 hover:text-white transition">Official LCCC Student Automate</a></li>
+            <li><a href="https://www.facebook.com/LCCCOfficialFB" className="text-emerald-200 hover:text-white transition">Official LCCC Facebook Page</a></li>
+            <li><a href="https://www.facebook.com/LCCCTheCollegeVoice" className="text-emerald-200 hover:text-white transition">Official Facebook Page of The College Voice</a></li>
           </ul>
         </div>
 

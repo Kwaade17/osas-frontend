@@ -5,10 +5,10 @@ function PendingRequestsTable() {
   ];
 
   return (
-    <div className="w-full overflow-x-auto rounded-xl border border-gray-100 shadow-sm">
-      <table className="w-full border-collapse text-left text-sm text-gray-600">
+    <div className="w-full overflow-x-auto rounded-xl border border-gray-100">
+      <table className="w-full rounded-xl border-collapse text-left text-sm text-gray-600">
         {/* Table Header */}
-        <thead className="bg-gray-50 text-xs font-semibold uppercase tracking-wider text-gray-700">
+        <thead className="text-white bg-emerald-900 text-xs font-semibold uppercase tracking-wider">
           <tr>
             <th scope="col" className="px-6 py-4">DATE</th>
             <th scope="col" className="px-6 py-4">Name</th>

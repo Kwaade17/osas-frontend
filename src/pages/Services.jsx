@@ -80,21 +80,21 @@ function Services() {
                         <div className="max-w-7xl mx-auto lg:px-8">
           
                             {/* Tabs */}
-                            <div className="flex border-b border-slate-200 bg-white rounded-t-xl border-t border-x overflow-hidden">
+                            <div className="flex overflow-x-auto no-scrollbar border-b border-slate-200 bg-white rounded-t-xl border-t border-x">
                                 <button 
-                                    className={`flex-1 py-4 text-center text-sm font-semibold transition cursor-pointer ${selectedTab === 'id-process' ? 'bg-emerald-500 text-white' : 'hover:bg-slate-100'}`}
+                                    className={`shrink-0 px-6 sm:grow py-4 text-center text-sm font-semibold transition cursor-pointer ${selectedTab === 'id-process' ? 'bg-emerald-900 text-white' : 'hover:bg-slate-100'}`}
                                     onClick={() => setSelectedTab('id-process')}
                                 >
                                     ID PROCESS
                                 </button>
                                 <button 
-                                    className={`flex-1 py-4 text-center text-sm font-semibold transition cursor-pointer ${selectedTab === 'registrar' ? 'bg-emerald-500 text-white' : 'hover:bg-slate-100'}`}
+                                    className={`shrink-0 px-6 sm:grow py-4 text-center text-sm font-semibold transition cursor-pointer ${selectedTab === 'registrar' ? 'bg-emerald-900 text-white' : 'hover:bg-slate-100'}`}
                                     onClick={() => setSelectedTab('registrar')}
                                 >   
                                     REGISTRAR
                                 </button>
                                 <button 
-                                    className={`flex-1 py-4 text-center text-sm font-semibold transition cursor-pointer ${selectedTab === 'good-moral' ? 'bg-emerald-500 text-white' : 'hover:bg-slate-100'}`}
+                                    className={`shrink-0 px-6 sm:grow py-4 text-center text-sm font-semibold transition cursor-pointer ${selectedTab === 'good-moral' ? 'bg-emerald-900 text-white' : 'hover:bg-slate-100'}`}
                                     onClick={() => setSelectedTab('good-moral')}
                                 >
                                     GOOD MORAL
@@ -282,10 +282,7 @@ function Services() {
                                         <h2 className="text-xl font-semibold text-slate-900">Pending Request</h2>
                                         <p className="text-sm text-slate-600 mt-1">Monitor your pending status for claiming your request in the registrar.</p>
                                     </div>
-                                    <span className="inline-flex items-center justify-center rounded-full border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-800">
-                                        Available for enrolled students
-                                    </span>
-                                    <div className="w-full md:col-span-2">
+                                    <div className="w-full md:col-span-2 overflow-x-auto rounded-xl shadow">
                                         <Table />
                                     </div>
                                 </div>
