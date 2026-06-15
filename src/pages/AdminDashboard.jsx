@@ -10,13 +10,19 @@ export default function AdminDashboard() {
   const [appointments, setAppointments] = useState([]);
   const [messages, setMessages] = useState([]);
   const [organizations, setOrganizations] = useState([]); 
+  
+  // Dynamic Student Transaction Request States [1]
+  const [idRequests, setIdRequests] = useState([]);
+  const [gmcRequests, setGmcRequests] = useState([]);
+  const [requestsTab, setRequestsTab] = useState('id-requests'); // 'id-requests' or 'gmc-requests'
+
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
   const userRole = localStorage.getItem('role') || 'admin';
 
-  // Developer Dashboard Tabs & State
+  // Developer Dashboard State
   const [devTab, setDevTab] = useState('about');
   const [aboutData, setAboutData] = useState({
     content: { heading: '', subheading: '', vision: '', mission: '' },
@@ -38,7 +44,7 @@ export default function AdminDashboard() {
     hero_bg_image: ''
   });
 
-  // Developer Tab: Home Grid (Site Services & Programs) State [1]
+  // Developer Tab: Home Grid State
   const [allServices, setAllServices] = useState([]);
   const [selectedServiceId, setSelectedServiceId] = useState('');
   const [serviceForm, setServiceForm] = useState({
@@ -46,6 +52,26 @@ export default function AdminDashboard() {
     description: '',
     icon_class: 'fa-solid fa-brain',
     service_type: 'service'
+  });
+
+  // Developer Tab: Services Page CMS State
+  const [pageServices, setPageServices] = useState([]);
+  const [selectedPageServiceId, setSelectedPageServiceId] = useState('');
+  const [pageServiceForm, setPageServiceForm] = useState({
+    title: '',
+    icon_emoji: '🧠',
+    description: '',
+    feature_one_title: '',
+    feature_one_desc: '',
+    feature_two_title: '',
+    feature_two_desc: '',
+    feature_three_title: '',
+    feature_three_desc: '',
+    instructions: '',
+    sidebar_title: '',
+    sidebar_text: '',
+    btn_primary_text: '',
+    btn_secondary_text: ''
   });
 
   // Admin Dashboard State
@@ -93,7 +119,7 @@ export default function AdminDashboard() {
           fetch(`${API_BASE_URL}/api/about`),
           fetch(`${API_BASE_URL}/api/site-services`),
           fetch(`${API_BASE_URL}/api/home`),
-          fetch(`${API_BASE_URL}/api/services-page`) // Fetch dynamic services page [1]
+          fetch(`${API_BASE_URL}/api/services-page`)
         ]);
 
         if (!aboutRes.ok || !srvRes.ok || !homeRes.ok || !pgSrvRes.ok) throw new Error('Failed to load portal databases.');
@@ -101,11 +127,12 @@ export default function AdminDashboard() {
         const abtData = await aboutRes.json();
         const srvData = await srvRes.json();
         const hData = await homeRes.json();
+        const pgSrvData = await pgSrvRes.json();
 
         setAboutData(abtData);
         setAllServices(srvData);
+        setPageServices(pgSrvData);
         
-        // Prepopulate Home Editor Form
         if (hData.hero_title) {
           setHomeForm({
             hero_title: hData.hero_title || '',
@@ -114,7 +141,6 @@ export default function AdminDashboard() {
           });
         }
 
-        // Prepopulate functional area selectors (About Page)
         if (abtData.functionalAreas.length > 0 && !selectedAreaId) {
           const firstArea = abtData.functionalAreas[0];
           setSelectedAreaId(firstArea.id);
@@ -127,7 +153,6 @@ export default function AdminDashboard() {
           setSelectedAreaId('new');
         }
 
-        // Prepopulate staff selectors (About Page)
         if (abtData.staff.length > 0 && !selectedStaffId) {
           const firstStaff = abtData.staff[0];
           setSelectedStaffId(firstStaff.id);
@@ -141,7 +166,6 @@ export default function AdminDashboard() {
           setSelectedStaffId('new');
         }
 
-        // Prepopulate home-grid services selectors (Home Page)
         if (srvData.length > 0 && !selectedServiceId) {
           const firstSrv = srvData[0];
           setSelectedServiceId(firstSrv.id);
@@ -155,15 +179,42 @@ export default function AdminDashboard() {
           setSelectedServiceId('new');
         }
 
+        if (pgSrvData.length > 0 && !selectedPageServiceId) {
+          const firstPageSrv = pgSrvData[0];
+          setSelectedPageServiceId(firstPageSrv.id);
+          setPageServiceForm({
+            title: firstPageSrv.title,
+            icon_emoji: firstPageSrv.icon_emoji,
+            description: firstPageSrv.description,
+            feature_one_title: firstPageSrv.feature_one_title,
+            feature_one_desc: firstPageSrv.feature_one_desc,
+            feature_two_title: firstPageSrv.feature_two_title,
+            feature_two_desc: firstPageSrv.feature_two_desc,
+            feature_three_title: firstPageSrv.feature_three_title || '',
+            feature_three_desc: firstPageSrv.feature_three_desc || '',
+            instructions: firstPageSrv.instructions || '',
+            sidebar_title: firstPageSrv.sidebar_title,
+            sidebar_text: pgSrvData[0].sidebar_text,
+            btn_primary_text: firstPageSrv.btn_primary_text,
+            btn_secondary_text: firstPageSrv.btn_secondary_text
+          });
+        }
+
       } else {
-        const [apptRes, msgRes, orgRes] = await Promise.all([
+        const [apptRes, msgRes, orgRes, idRes, gmcRes] = await Promise.all([
           fetch(`${API_BASE_URL}/api/appointments`, {
             headers: { 'Authorization': `Bearer ${token}` }
           }),
           fetch(`${API_BASE_URL}/api/contact`, {
             headers: { 'Authorization': `Bearer ${token}` }
           }),
-          fetch(`${API_BASE_URL}/api/organizations`)
+          fetch(`${API_BASE_URL}/api/organizations`),
+          fetch(`${API_BASE_URL}/api/id_requests`, { 
+            headers: { 'Authorization': `Bearer ${token}` }
+          }),
+          fetch(`${API_BASE_URL}/api/gmc_requests`, { 
+            headers: { 'Authorization': `Bearer ${token}` }
+          })
         ]);
 
         if (apptRes.status === 401 || apptRes.status === 403 || msgRes.status === 401 || msgRes.status === 403) {
@@ -171,20 +222,18 @@ export default function AdminDashboard() {
           return;
         }
 
-        if (!apptRes.ok || !msgRes.ok || !orgRes.ok) {
+        if (!apptRes.ok || !msgRes.ok || !orgRes.ok || !idRes.ok || !gmcRes.ok) {
           throw new Error('Failed to load database registries.');
         }
 
-        const apptData = await apptRes.json();
-        const msgData = await msgRes.json();
-        const orgData = await orgRes.json();
-
-        setAppointments(apptData);
-        setMessages(msgData);
-        setOrganizations(orgData);
+        setAppointments(await apptRes.json());
+        setMessages(await msgRes.json());
+        setOrganizations(await orgRes.json());
+        setIdRequests(await idRes.json());
+        setGmcRequests(await gmcRes.json());
         
-        if (orgData.length > 0 && !selectedOrgId) {
-          setSelectedOrgId(orgData[0].id); 
+        if (organizations.length > 0 && !selectedOrgId) {
+          setSelectedOrgId(organizations[0].id); 
         }
       }
     } catch (err) {
@@ -193,10 +242,10 @@ export default function AdminDashboard() {
     } finally {
       setIsLoading(false);
     }
-  }, [handleLogout, userRole, selectedAreaId, selectedStaffId, selectedServiceId, selectedOrgId]);
+  }, [handleLogout, userRole, selectedAreaId, selectedStaffId, selectedServiceId, selectedPageServiceId, selectedOrgId, organizations]); 
 
   // ==========================================
-  // 3. ACTION HANDLERS (Properly Scoped at Top) [1]
+  // 3. ACTION HANDLERS
   // ==========================================
 
   const handleAreaSelectChange = (id) => {
@@ -249,6 +298,29 @@ export default function AdminDashboard() {
     }
   };
 
+  const handlePageServiceSelectChange = (id) => {
+    setSelectedPageServiceId(id);
+    const srv = pageServices.find(item => item.id === parseInt(id));
+    if (srv) {
+      setPageServiceForm({
+        title: srv.title,
+        icon_emoji: srv.icon_emoji,
+        description: srv.description,
+        feature_one_title: srv.feature_one_title,
+        feature_one_desc: srv.feature_one_desc,
+        feature_two_title: srv.feature_two_title,
+        feature_two_desc: srv.feature_two_desc,
+        feature_three_title: srv.feature_three_title || '',
+        feature_three_desc: srv.feature_three_desc || '',
+        instructions: srv.instructions || '',
+        sidebar_title: srv.sidebar_title,
+        sidebar_text: srv.sidebar_text,
+        btn_primary_text: srv.btn_primary_text,
+        btn_secondary_text: srv.btn_secondary_text
+      });
+    }
+  };
+
   const handleImageFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -281,7 +353,6 @@ export default function AdminDashboard() {
     }
   };
 
-  // Re-added handleStatusChange handler before returns (Fixes undefined error) [1]
   const handleStatusChange = async (id, newStatus) => {
     const token = localStorage.getItem('token');
     try {
@@ -303,6 +374,64 @@ export default function AdminDashboard() {
         fetchAdminData(true);
       } else {
         alert('Failed to update appointment status.');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Error connecting to server.');
+    }
+  };
+
+  // 1. Securely update Student ID request status [1]
+  const handleIdStatusChange = async (id, newStatus) => {
+    const token = localStorage.getItem('token');
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/id_requests/${id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ status: newStatus }),
+      });
+
+      if (response.status === 401 || response.status === 403) {
+        handleLogout();
+        return;
+      }
+
+      if (response.ok) {
+        fetchAdminData(true);
+      } else {
+        alert('Failed to update ID request status.');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Error connecting to server.');
+    }
+  };
+
+  // 2. Securely update Student GMC request status [1]
+  const handleGmcStatusChange = async (id, newStatus) => {
+    const token = localStorage.getItem('token');
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/gmc_requests/${id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ status: newStatus }),
+      });
+
+      if (response.status === 401 || response.status === 403) {
+        handleLogout();
+        return;
+      }
+
+      if (response.ok) {
+        fetchAdminData(true);
+      } else {
+        alert('Failed to update GMC request status.');
       }
     } catch (err) {
       console.error(err);
@@ -467,7 +596,6 @@ export default function AdminDashboard() {
     }
   };
 
-  // Submit Home Grid items: POST (Add New) or PUT (Edit) [1]
   const handleServiceSubmit = async (e) => {
     e.preventDefault();
     setDevSuccessMessage(null);
@@ -508,6 +636,39 @@ export default function AdminDashboard() {
     }
   };
 
+  const handlePageServiceSubmit = async (e) => {
+    e.preventDefault();
+    setDevSuccessMessage(null);
+    setError(null);
+    const token = localStorage.getItem('token');
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/services-page/${selectedPageServiceId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(pageServiceForm)
+      });
+
+      if (response.status === 401 || response.status === 403) {
+        handleLogout();
+        return;
+      }
+
+      if (response.ok) {
+        setDevSuccessMessage('Services Page details updated successfully!');
+        fetchAdminData(true);
+      } else {
+        const data = await response.json();
+        setError(data.error || 'Failed to update Services page content.');
+      }
+    } catch (err) {
+      console.error(err);
+      setError('Connection error, could not save updates.');
+    }
+  };
 
   const handleAnnouncementSubmit = async (e) => {
     e.preventDefault();
@@ -616,7 +777,7 @@ export default function AdminDashboard() {
   };
 
   // ==========================================
-  // 4. SECURE DECOUPLED EFFECT (Wrapped in Timeout)
+  // 4. SECURE EFFECT (Wrapped in Timeout)
   // ==========================================
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -666,20 +827,25 @@ export default function AdminDashboard() {
             >
               ℹ️ About OSAS
             </button>
-            
+            <button 
+              onClick={() => setDevTab('services')}
+              className={`flex-1 py-4 text-center text-sm font-semibold transition cursor-pointer ${
+                devTab === 'services' ? 'bg-emerald-50 text-emerald-900 border-b-2 border-emerald-800' : 'text-slate-600 hover:bg-slate-50'
+              }`}
+            >
+              🧠 Services
+            </button>
           </div>
 
           {/* Display panel */}
-          <div className="bg-white border-b border-x border-slate-200 rounded-b-lg p-6 min-h-100">
+          <div className="bg-white border-b border-x border-slate-200 rounded-b-lg p-6 min-h-[400px]">
             
             {error && <div className="bg-rose-50 border border-rose-200 text-rose-850 p-3 rounded text-xs mb-6">⚠️ {error}</div>}
             {devSuccessMessage && <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 p-3 rounded text-xs font-semibold mb-6">✅ {devSuccessMessage}</div>}
 
-            {/* --- TAB 1: HOME (Fully Functional Home Page Landing & Grid CMS) [1] --- */}
+            {/* --- TAB 1: HOME --- */}
             {devTab === 'home' && (
               <div className="space-y-12">
-                
-                {/* Section A: Banner */}
                 <form onSubmit={handleHomeSubmit} className="space-y-4 p-6 bg-slate-50 border border-slate-200 rounded-lg">
                   <h3 className="font-extrabold text-slate-800 text-base border-b pb-2">Section A: Configure Homepage Landing Details</h3>
 
@@ -724,7 +890,7 @@ export default function AdminDashboard() {
                             className="w-full h-full object-cover"
                           />
                         </div>
-                        <div className="grow">
+                        <div className="flex-grow">
                           <p className="text-[10px] font-bold text-slate-800 leading-snug">Landing Backdrop Preview Loaded</p>
                           <button 
                             type="button"
@@ -746,7 +912,6 @@ export default function AdminDashboard() {
                   </button>
                 </form>
 
-                {/* Section B: Grid Services & Programs (The 6 home cards) [1] */}
                 <form onSubmit={handleServiceSubmit} className="space-y-4 p-6 bg-slate-50 border border-slate-200 rounded-lg">
                   <h3 className="font-extrabold text-slate-800 text-base border-b pb-2">Section B: Configure Home Services & Programs Grid</h3>
 
@@ -815,7 +980,7 @@ export default function AdminDashboard() {
                       value={serviceForm.description}
                       onChange={(e) => setServiceForm({ ...serviceForm, description: e.target.value })}
                       placeholder="Core focus details..."
-                      className="w-full border border-slate-300 rounded px-3 py-1.5 text-xs bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                      className="w-full border border-slate-300 rounded px-3 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-emerald-500 bg-white"
                     ></textarea>
                   </div>
 
@@ -823,8 +988,176 @@ export default function AdminDashboard() {
                     {selectedServiceId === 'new' ? 'Register and Publish Grid Item' : 'Save Section B Grid Revisions'}
                   </button>
                 </form>
-
               </div>
+            )}
+
+            {/* --- TAB 2: SERVICES (DYNAMIC) --- */}
+            {devTab === 'services' && (
+              <form onSubmit={handlePageServiceSubmit} className="max-w-2xl mx-auto space-y-6">
+                <h3 className="text-lg font-bold text-slate-800 border-b pb-2">Configure Services Page Layout</h3>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-600 uppercase mb-2">Select Service to Edit</label>
+                  <select 
+                    value={selectedPageServiceId}
+                    onChange={(e) => handlePageServiceSelectChange(e.target.value)}
+                    className="w-full border border-slate-300 bg-white rounded px-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                  >
+                    {pageServices.map((item) => (
+                      <option key={item.id} value={item.id}>
+                        {item.title}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-600 uppercase mb-2">Service Title</label>
+                  <input 
+                    type="text" required
+                    value={pageServiceForm.title}
+                    onChange={(e) => setPageServiceForm({ ...pageServiceForm, title: e.target.value })}
+                    className="w-full border border-slate-300 rounded px-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-600 uppercase mb-2">Description</label>
+                  <textarea 
+                    required rows="4"
+                    value={pageServiceForm.description}
+                    onChange={(e) => setPageServiceForm({ ...pageServiceForm, description: e.target.value })}
+                    className="w-full border border-slate-300 rounded px-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                  ></textarea>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-600 uppercase mb-2">Feature One Title</label>
+                    <input 
+                      type="text" required
+                      value={pageServiceForm.feature_one_title}
+                      onChange={(e) => setPageServiceForm({ ...pageServiceForm, feature_one_title: e.target.value })}
+                      className="w-full border border-slate-300 rounded px-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-600 uppercase mb-2">Feature One Description / List (Use newlines for lists)</label>
+                    <textarea 
+                      required rows="3"
+                      value={pageServiceForm.feature_one_desc}
+                      onChange={(e) => setPageServiceForm({ ...pageServiceForm, feature_one_desc: e.target.value })}
+                      className="w-full border border-slate-300 rounded px-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500 bg-white"
+                    ></textarea>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-600 uppercase mb-2">Feature Two Title</label>
+                    <input 
+                      type="text" required
+                      value={pageServiceForm.feature_two_title}
+                      onChange={(e) => setPageServiceForm({ ...pageServiceForm, feature_two_title: e.target.value })}
+                      className="w-full border border-slate-300 rounded px-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-600 uppercase mb-2">Feature Two Description / List (Use newlines for lists)</label>
+                    <textarea 
+                      required rows="3"
+                      value={pageServiceForm.feature_two_desc}
+                      onChange={(e) => setPageServiceForm({ ...pageServiceForm, feature_two_desc: e.target.value })}
+                      className="w-full border border-slate-300 rounded px-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500 bg-white"
+                    ></textarea>
+                  </div>
+                </div>
+
+                {selectedPageServiceId === '2' && ( 
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 border border-slate-100 p-4 rounded-lg bg-slate-50">
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-600 uppercase mb-2">Feature Three Title</label>
+                      <input 
+                        type="text"
+                        value={pageServiceForm.feature_three_title}
+                        onChange={(e) => setPageServiceForm({ ...pageServiceForm, feature_three_title: e.target.value })}
+                        className="w-full border border-slate-300 rounded px-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500 bg-white"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-600 uppercase mb-2">Feature Three Description</label>
+                      <textarea 
+                        rows="2"
+                        value={pageServiceForm.feature_three_desc}
+                        onChange={(e) => setPageServiceForm({ ...pageServiceForm, feature_three_desc: e.target.value })}
+                        className="w-full border border-slate-300 rounded px-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500 bg-white"
+                      ></textarea>
+                    </div>
+                  </div>
+                )}
+
+                {selectedPageServiceId === '1' && ( 
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-600 uppercase mb-2">Booking Instructions (Separate each step with a new line)</label>
+                    <textarea 
+                      rows="4"
+                      value={pageServiceForm.instructions}
+                      onChange={(e) => setPageServiceForm({ ...pageServiceForm, instructions: e.target.value })}
+                      placeholder="e.g. 1. Click the booking button...&#10;2. Fill in details...&#10;3. Confirm..."
+                      className="w-full border border-slate-300 rounded px-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500 bg-white"
+                    ></textarea>
+                  </div>
+                )}
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 border-t border-slate-200 pt-6">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-600 uppercase mb-2">Sidebar Card Title</label>
+                    <input 
+                      type="text" required
+                      value={pageServiceForm.sidebar_title}
+                      onChange={(e) => setPageServiceForm({ ...pageServiceForm, sidebar_title: e.target.value })}
+                      className="w-full border border-slate-300 rounded px-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-600 uppercase mb-2">Sidebar Card Text Description</label>
+                    <textarea 
+                      required rows="2"
+                      value={pageServiceForm.sidebar_text}
+                      onChange={(e) => setPageServiceForm({ ...pageServiceForm, sidebar_text: e.target.value })}
+                      className="w-full border border-slate-300 rounded px-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500 bg-white"
+                    ></textarea>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-600 uppercase mb-2">Primary Button Text Label</label>
+                    <input 
+                      type="text" required
+                      value={pageServiceForm.btn_primary_text}
+                      onChange={(e) => setPageServiceForm({ ...pageServiceForm, btn_primary_text: e.target.value })}
+                      className="w-full border border-slate-300 rounded px-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-600 uppercase mb-2">Secondary Button Text Label</label>
+                    <input 
+                      type="text" required
+                      value={pageServiceForm.btn_secondary_text}
+                      onChange={(e) => setPageServiceForm({ ...pageServiceForm, btn_secondary_text: e.target.value })}
+                      className="w-full border border-slate-300 rounded px-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                    />
+                  </div>
+                </div>
+
+                <button 
+                  type="submit"
+                  className="w-full bg-emerald-800 hover:bg-emerald-950 text-white font-bold py-3 rounded transition shadow-sm cursor-pointer"
+                >
+                  Save Services Page Revisions
+                </button>
+              </form>
             )}
 
             {/* --- TAB 3: ABOUT OSAS EDITOR --- */}
@@ -1033,7 +1366,7 @@ export default function AdminDashboard() {
   }
 
   // ==========================================
-  // 6. STANDARD ADMIN PANEL RETURN
+  // 6. STANDARD ADMIN PANEL RETURN [1]
   // ==========================================
   return (
     <div className="bg-slate-50 min-h-screen pb-16">
@@ -1072,6 +1405,17 @@ export default function AdminDashboard() {
           >
             ✉️ Contact Submissions ({messages.length})
           </button>
+          
+          {/* New Tab Button: Student Requests Queue [1] */}
+          <button 
+            onClick={() => setActiveTab('requests')}
+            className={`flex-1 py-4 text-center text-sm font-semibold transition cursor-pointer ${
+              activeTab === 'requests' ? 'bg-emerald-50 text-emerald-900 border-b-2 border-emerald-800' : 'text-slate-600 hover:bg-slate-50'
+            }`}
+          >
+            📂 Student Requests ({idRequests.length + gmcRequests.length})
+          </button>
+
           <button 
             onClick={() => setActiveTab('org-manager')}
             className={`flex-1 py-4 text-center text-sm font-semibold transition cursor-pointer ${
@@ -1091,11 +1435,11 @@ export default function AdminDashboard() {
         </div>
 
         {/* Dynamic Display Area */}
-        <div className="bg-white border-b border-x border-slate-200 rounded-b-lg p-6 min-h-100">
+        <div className="bg-white border-b border-x border-slate-200 rounded-b-lg p-6 min-h-[400px]">
           
-          {isLoading && activeTab !== 'post-announcement' && activeTab !== 'org-manager' ? (
+          {isLoading && activeTab !== 'post-announcement' && activeTab !== 'org-manager' && activeTab !== 'requests' ? (
             <div className="text-center py-20 text-slate-500 text-sm">Loading registries...</div>
-          ) : error && activeTab !== 'post-announcement' && activeTab !== 'org-manager' ? (
+          ) : error && activeTab !== 'post-announcement' && activeTab !== 'org-manager' && activeTab !== 'requests' ? (
             <div className="bg-rose-50 border border-rose-200 text-rose-850 p-4 rounded text-sm text-center">⚠️ {error}</div>
           ) : (
             
@@ -1193,7 +1537,186 @@ export default function AdminDashboard() {
                 </div>
               )}
 
-              {/* --- TAB 3: ORGANIZATIONS MANAGER --- */}
+              {/* --- TAB 3: STUDENT REQUESTS QUEUE [1] --- */}
+              {activeTab === 'requests' && (
+                <div className="space-y-6">
+                  {/* Sub-tab selection */}
+                  <div className="flex border-b border-slate-100 max-w-md">
+                    <button 
+                      onClick={() => setRequestsTab('id-requests')}
+                      className={`flex-1 pb-2 text-center text-xs font-bold transition cursor-pointer ${requestsTab === 'id-requests' ? 'border-b-2 border-emerald-800 text-emerald-900' : 'text-slate-400 hover:text-slate-600'}`}
+                    >
+                      💳 ID Requests ({idRequests.length})
+                    </button>
+                    <button 
+                      onClick={() => setRequestsTab('gmc-requests')}
+                      className={`flex-1 pb-2 text-center text-xs font-bold transition cursor-pointer ${requestsTab === 'gmc-requests' ? 'border-b-2 border-emerald-800 text-emerald-900' : 'text-slate-400 hover:text-slate-600'}`}
+                    >
+                      📜 Good Moral Character ({gmcRequests.length})
+                    </button>
+                  </div>
+
+                  {/* Sub-tab 1: ID Requests Table */}
+                  {requestsTab === 'id-requests' && (
+                    <div className="overflow-x-auto">
+                      {idRequests.length > 0 ? (
+                        <table className="w-full text-left border-collapse text-xs">
+                          <thead>
+                            <tr className="bg-slate-50 border-b border-slate-200 text-[10px] font-semibold text-slate-500 uppercase">
+                              <th className="p-3">Student Name</th>
+                              <th className="p-3">Program</th>
+                              <th className="p-3">Type / Year</th>
+                              <th className="p-3">Status</th>
+                              <th className="p-3 text-right">Actions</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {idRequests.map((req) => (
+                              <tr key={req.id} className="border-b border-slate-100 hover:bg-slate-50">
+                                <td className="p-3">
+                                  <p className="font-bold text-slate-900">{req.first_name} {req.last_name}</p>
+                                </td>
+                                <td className="p-3 text-slate-600 max-w-xs truncate">{req.programs}</td>
+                                <td className="p-3">
+                                  <p className="font-medium text-slate-700">{req.request_type}</p>
+                                  <p className="text-[10px] text-slate-400">{req.year_level}</p>
+                                </td>
+                                <td className="p-3">
+                                  <span className={`px-2 py-0.5 text-[9px] font-extrabold uppercase rounded ${
+                                    req.status === 'Ready for Claiming' ? 'bg-emerald-50 text-emerald-800 border border-emerald-100' :
+                                    req.status === 'Processing' ? 'bg-blue-50 text-blue-800 border border-blue-100' :
+                                    'bg-amber-50 text-amber-800 border border-amber-100'
+                                  }`}>
+                                    {req.status}
+                                  </span>
+                                </td>
+                                <td className="p-3 text-right space-x-2 whitespace-nowrap">
+                                  {req.status === 'Pending' && (
+                                    <>
+                                      <button 
+                                        onClick={() => handleIdStatusChange(req.id, 'Processing')}
+                                        className="bg-blue-800 hover:bg-blue-900 text-white text-[10px] font-semibold py-1 px-2.5 rounded shadow-sm cursor-pointer"
+                                      >
+                                        Process
+                                      </button>
+                                      <button 
+                                        onClick={() => handleIdStatusChange(req.id, 'Cancelled')}
+                                        className="bg-rose-800 hover:bg-rose-900 text-white text-[10px] font-semibold py-1 px-2.5 rounded shadow-sm cursor-pointer"
+                                      >
+                                        Cancel
+                                      </button>
+                                    </>
+                                  )}
+                                  {req.status === 'Processing' && (
+                                    <button 
+                                      onClick={() => handleIdStatusChange(req.id, 'Ready for Claiming')}
+                                      className="bg-emerald-800 hover:bg-emerald-900 text-white text-[10px] font-semibold py-1 px-2.5 rounded shadow-sm cursor-pointer"
+                                    >
+                                      Mark as Ready
+                                    </button>
+                                  )}
+                                  {req.status === 'Ready for Claiming' && (
+                                    <span className="text-xs text-slate-400 italic">Ready for Student</span>
+                                  )}
+                                  {req.status === 'Cancelled' && (
+                                    <span className="text-xs text-rose-400 italic">Cancelled</span>
+                                  )}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      ) : (
+                        <div className="text-center py-12 text-slate-500 italic">No incoming student ID requests logged.</div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Sub-tab 2: GMC Requests Table */}
+                  {requestsTab === 'gmc-requests' && (
+                    <div className="overflow-x-auto">
+                      {gmcRequests.length > 0 ? (
+                        <table className="w-full text-left border-collapse text-xs">
+                          <thead>
+                            <tr className="bg-slate-50 border-b border-slate-200 text-[10px] font-semibold text-slate-500 uppercase">
+                              <th className="p-3">Student Name</th>
+                              <th className="p-3">Program / Type</th>
+                              <th className="p-3">GMC Details</th>
+                              <th className="p-3">Status</th>
+                              <th className="p-3 text-right">Actions</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {gmcRequests.map((req) => (
+                              <tr key={req.id} className="border-b border-slate-100 hover:bg-slate-50">
+                                <td className="p-3">
+                                  <p className="font-bold text-slate-900">{req.first_name} {req.last_name}</p>
+                                </td>
+                                <td className="p-3">
+                                  <p className="font-medium text-slate-700">{req.programs}</p>
+                                  <p className="text-[10px] text-slate-400 uppercase tracking-widest">{req.gmc_type}</p>
+                                end</td>
+                                <td className="p-3 text-slate-500">
+                                  {req.gmc_type === 'Graduate' ? (
+                                    <p>Graduated: {new Date(req.date_graduated).toLocaleDateString()} ({req.school_year})</p>
+                                  ) : (
+                                    <p>Level: {req.year_level} • {req.semester}</p>
+                                  )}
+                                </td>
+                                <td className="p-3">
+                                  <span className={`px-2 py-0.5 text-[9px] font-extrabold uppercase rounded ${
+                                    req.status === 'Ready for Claiming' ? 'bg-emerald-50 text-emerald-800 border border-emerald-100' :
+                                    req.status === 'Approved' ? 'bg-blue-50 text-blue-800 border border-blue-100' :
+                                    'bg-amber-50 text-amber-800 border border-amber-100'
+                                  }`}>
+                                    {req.status}
+                                  </span>
+                                </td>
+                                <td className="p-3 text-right space-x-2 whitespace-nowrap">
+                                  {req.status === 'Pending' && (
+                                    <>
+                                      <button 
+                                        onClick={() => handleGmcStatusChange(req.id, 'Approved')}
+                                        className="bg-blue-800 hover:bg-blue-900 text-white text-[10px] font-semibold py-1 px-2.5 rounded shadow-sm cursor-pointer"
+                                      >
+                                        Approve
+                                      </button>
+                                      <button 
+                                        onClick={() => handleGmcStatusChange(req.id, 'Cancelled')}
+                                        className="bg-rose-800 hover:bg-rose-900 text-white text-[10px] font-semibold py-1 px-2.5 rounded shadow-sm cursor-pointer"
+                                      >
+                                        Cancel
+                                      </button>
+                                    </>
+                                  )}
+                                  {req.status === 'Approved' && (
+                                    <button 
+                                      onClick={() => handleGmcStatusChange(req.id, 'Ready for Claiming')}
+                                      className="bg-emerald-800 hover:bg-emerald-900 text-white text-[10px] font-semibold py-1 px-2.5 rounded shadow-sm cursor-pointer"
+                                    >
+                                      Mark as Ready
+                                    </button>
+                                  )}
+                                  {req.status === 'Ready for Claiming' && (
+                                    <span className="text-xs text-slate-400 italic">Ready for Student</span>
+                                  )}
+                                  {req.status === 'Cancelled' && (
+                                    <span className="text-xs text-rose-400 italic">Cancelled</span>
+                                  )}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      ) : (
+                        <div className="text-center py-12 text-slate-500 italic">No incoming student Good Moral requests logged.</div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* --- TAB 4: ORGANIZATIONS MANAGER --- */}
               {activeTab === 'org-manager' && (
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
                   
@@ -1299,7 +1822,7 @@ export default function AdminDashboard() {
                 </div>
               )}
 
-              {/* --- TAB 4: POST ANNOUNCEMENT --- */}
+              {/* --- TAB 5: POST ANNOUNCEMENT --- */}
               {activeTab === 'post-announcement' && (
                 <form onSubmit={handleAnnouncementSubmit} className="max-w-2xl mx-auto space-y-6">
                   <h3 className="text-lg font-bold text-slate-800 border-b pb-2">Publish Campus Announcement</h3>
@@ -1356,7 +1879,7 @@ export default function AdminDashboard() {
                           className="w-full h-full object-cover"
                         />
                       </div>
-                      <div className="grow">
+                      <div className="flex-grow">
                         <p className="text-xs font-bold text-slate-800">Cover Image Preview Loaded</p>
                         <button 
                           type="button"
